@@ -64,6 +64,10 @@ namespace C2MDataRelation
                                     richTextBox1.Text = orr.GetString(0);
                                 }
                             }
+                            else
+                            {
+                                MessageBox.Show("BO might not exist!");
+                            }
                         }
                     }
                     catch (Exception err)
