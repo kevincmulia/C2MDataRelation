@@ -45,26 +45,40 @@ namespace C2MDataRelation
 
         private void button1_Click(object sender, EventArgs e)
         {
-            try
+            if (conn != null && conn.State == ConnectionState.Open)
             {
-                //QUERY BO SCHEMA
-                richTextBox1.Clear();
-                string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + textBox1.Text + "'";
-                OracleCommand orc = new OracleCommand(query, conn);
-                using (OracleDataReader orr = orc.ExecuteReader())
+                if (textBox1.Text != "")
                 {
-                    if (orr.HasRows)
+                    try
                     {
-                        while (orr.Read())
+                        //QUERY BO SCHEMA
+                        richTextBox1.Clear();
+                        string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + textBox1.Text + "'";
+                        OracleCommand orc = new OracleCommand(query, conn);
+                        using (OracleDataReader orr = orc.ExecuteReader())
                         {
-                            richTextBox1.Text = orr.GetString(0);
+                            if (orr.HasRows)
+                            {
+                                while (orr.Read())
+                                {
+                                    richTextBox1.Text = orr.GetString(0);
+                                }
+                            }
                         }
                     }
+                    catch (Exception err)
+                    {
+                        MessageBox.Show(err.Message);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Enter Business Object's name!");
                 }
             }
-            catch (Exception err)
+            else
             {
-                MessageBox.Show(err.Message);
+                MessageBox.Show("Connection to database is not initiated!");
             }
         }
 
