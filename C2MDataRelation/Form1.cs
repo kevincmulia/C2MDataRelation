@@ -46,7 +46,7 @@ namespace C2MDataRelation
 
         }
         private string getSchema(string schemaName) {
-            string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + textBox1.Text + "'";
+            string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + schemaName + "'";
             OracleCommand orc = new OracleCommand(query, conn);
             using (OracleDataReader orr = orc.ExecuteReader())
             {
