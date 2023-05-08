@@ -32,6 +32,9 @@ namespace C2MDataRelation
             {
                 MessageBox.Show(err.Message);
             }
+            finally {
+                conn.Close();
+            }
         }
         public Form1()
         {
@@ -42,7 +45,25 @@ namespace C2MDataRelation
         {
 
         }
-
+        private string getSchema(string schemaName) {
+            string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + textBox1.Text + "'";
+            OracleCommand orc = new OracleCommand(query, conn);
+            using (OracleDataReader orr = orc.ExecuteReader())
+            {
+                if (orr.HasRows)
+                {
+                    while (orr.Read())
+                    {
+                       return orr.GetString(0);
+                    }
+                }
+                else
+                {
+                    return ("Schema might not exist!");
+                }
+            }
+            return "error";
+        }
         private void button1_Click(object sender, EventArgs e)
         {
             if (conn != null && conn.State == ConnectionState.Open)
@@ -53,22 +74,7 @@ namespace C2MDataRelation
                     {
                         //QUERY BO SCHEMA
                         richTextBox1.Clear();
-                        string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + textBox1.Text + "'";
-                        OracleCommand orc = new OracleCommand(query, conn);
-                        using (OracleDataReader orr = orc.ExecuteReader())
-                        {
-                            if (orr.HasRows)
-                            {
-                                while (orr.Read())
-                                {
-                                    richTextBox1.Text = orr.GetString(0);
-                                }
-                            }
-                            else
-                            {
-                                MessageBox.Show("BO might not exist!");
-                            }
-                        }
+                        MessageBox.Show(getSchema(textBox1.Text));
                     }
                     catch (Exception err)
                     {
