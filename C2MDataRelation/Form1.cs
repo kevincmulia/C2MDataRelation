@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Oracle.ManagedDataAccess;
 using Oracle.ManagedDataAccess.Client;
+using System.Collections;
 
 namespace C2MDataRelation
 {
@@ -44,6 +45,27 @@ namespace C2MDataRelation
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+        private void changeSomething(string tag,string value) { 
+            
+        }
+        
+        private ArrayList findSchemaAffected(string schemaName) { 
+            string query = "SELECT schema_name from f1_schema where schema_defn like '%\""+schemaName+"\"%'";
+            OracleCommand orc = new OracleCommand(query, conn);
+            var arrList = new ArrayList();
+            using (OracleDataReader orr = orc.ExecuteReader())
+            {
+                if (orr.HasRows)
+                {
+                    while (orr.Read())
+                    {
+                       arrList.Add(orr.GetString(0));
+                    }
+                }
+            }
+            //if arraylist.size = 0 then its not included in other schema
+            return arrList;
         }
         private string getSchema(string schemaName) {
             string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + schemaName + "'";
