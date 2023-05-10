@@ -33,9 +33,6 @@ namespace C2MDataRelation
             {
                 MessageBox.Show(err.Message);
             }
-            finally {
-                conn.Close();
-            }
         }
         public Form1()
         {
@@ -52,15 +49,16 @@ namespace C2MDataRelation
         
         private ArrayList findSchemaAffected(string schemaName) { 
             string query = "SELECT schema_name from f1_schema where schema_defn like '%\""+schemaName+"\"%'";
+            //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            var arrList = new ArrayList();
+            ArrayList arrList = new ArrayList();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                       arrList.Add(orr.GetString(0));
+                        arrList.Add(orr.GetString(0));
                     }
                 }
             }
@@ -92,20 +90,22 @@ namespace C2MDataRelation
             {
                 if (textBox1.Text != "")
                 {
-                    try
-                    {
-                        //QUERY BO SCHEMA
-                        richTextBox1.Clear();
-                        MessageBox.Show(getSchema(textBox1.Text));
-                    }
-                    catch (Exception err)
-                    {
-                        MessageBox.Show(err.Message);
+                    if (comboBox1.Text.Equals("Business Object") || comboBox1.Text.Equals("Business Service") || comboBox1.Text.Equals("Data Area")) {
+                        try
+                        {
+                            //QUERY BO SCHEMA
+                            richTextBox1.Clear();
+                            richTextBox1.Text = getSchema(textBox1.Text);
+                        }
+                        catch (Exception err)
+                        {
+                            MessageBox.Show(err.Message);
+                        }
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Enter Business Object's name!");
+                    MessageBox.Show("Please enter an objects name");
                 }
             }
             else
@@ -122,6 +122,48 @@ namespace C2MDataRelation
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             conn.Close();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (conn != null && conn.State == ConnectionState.Open)
+            {
+                if (textBox1.Text != "")
+                {
+                    try
+                    {
+                        //QUERY BO SCHEMA
+                        richTextBox1.Clear();
+                        ArrayList arr = findSchemaAffected(textBox1.Text);
+                        if (arr.Count == 0)
+                        {
+                            MessageBox.Show("Schema is not reference in other schema");
+                        }
+                        else {
+                            foreach (string schema in arr) {
+                                richTextBox1.AppendText(schema+"\n");
+                            }
+                        }
+                    }
+                    catch (Exception err)
+                    {
+                        MessageBox.Show(err.Message);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please enter an objects name");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Connection to database is not initiated!");
+            }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
