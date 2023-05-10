@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Oracle.ManagedDataAccess;
 using Oracle.ManagedDataAccess.Client;
+using System.Xml;
+using System.IO;
 
 namespace C2MDataRelation
 {
@@ -32,9 +34,6 @@ namespace C2MDataRelation
             {
                 MessageBox.Show(err.Message);
             }
-            finally {
-                conn.Close();
-            }
         }
         public Form1()
         {
@@ -45,6 +44,8 @@ namespace C2MDataRelation
         {
 
         }
+
+        //GET BUSINESS OBJECT SCHEMA
         private string getSchema(string schemaName) {
             string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + schemaName + "'";
             OracleCommand orc = new OracleCommand(query, conn);
@@ -64,6 +65,7 @@ namespace C2MDataRelation
             }
             return "error";
         }
+
         private void button1_Click(object sender, EventArgs e)
         {
             if (conn != null && conn.State == ConnectionState.Open)
@@ -72,9 +74,62 @@ namespace C2MDataRelation
                 {
                     try
                     {
+                        //bool
+                        bool search = false;
+
                         //QUERY BO SCHEMA
                         richTextBox1.Clear();
-                        MessageBox.Show(getSchema(textBox1.Text));
+                        string resultSC = @"" + getSchema(textBox1.Text);
+                        //richTextBox1.Text = resultSC;
+
+                        XmlReader reader = XmlReader.Create(new System.IO.StringReader(resultSC));
+                        while (reader.Read())
+                        {
+                            switch(reader.NodeType)
+                            {
+                                case XmlNodeType.Element:
+                                    if(reader.Name == "includeBO" || reader.Name == "includeDA" || reader.Name == "includeBS")
+                                    {
+                                        string includeBO = "";
+                                        richTextBox1.Text += "<";
+                                        while (reader.MoveToNextAttribute())
+                                        {
+                                            richTextBox1.Text += reader.Value + ">";
+                                            includeBO = getSchema(reader.Value);
+                                            StringReader strReader = new StringReader(includeBO);
+                                            while (true)
+                                            {
+                                                string aLine = strReader.ReadLine();
+                                                if (aLine != null)
+                                                {
+                                                    richTextBox1.Text += "  " + aLine + "\n";
+                                                }
+                                                else
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            richTextBox1.Text += "</" + reader.Value + ">\n";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        richTextBox1.Text += "<" + reader.Name;
+                                        while (reader.MoveToNextAttribute())
+                                        {
+                                            richTextBox1.Text += " " + reader.Name + "='" + reader.Value + "'";
+                                        }
+                                        richTextBox1.Text += ">\n";
+                                    }
+                                    break;
+                                case XmlNodeType.Text:
+                                    richTextBox1.Text += reader.Value;
+                                    break;
+                                case XmlNodeType.EndElement:
+                                    richTextBox1.Text += "</" + reader.Name + ">\n";
+                                    break;
+                            }
+                        }
                     }
                     catch (Exception err)
                     {
@@ -100,6 +155,11 @@ namespace C2MDataRelation
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             conn.Close();
+        }
+
+        private void Form1_Load_1(object sender, EventArgs e)
+        {
+
         }
     }
 }
