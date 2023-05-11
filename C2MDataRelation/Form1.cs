@@ -13,6 +13,7 @@ using Oracle.ManagedDataAccess.Client;
 using System.Collections;
 using System.Xml;
 using System.IO;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace C2MDataRelation
 {
@@ -52,7 +53,7 @@ namespace C2MDataRelation
         private ArrayList findSchemaAffected(string schemaName) { 
             string query = "SELECT schema_name from f1_schema where schema_defn like '%\""+schemaName+"\"%'";
             OracleCommand orc = new OracleCommand(query, conn);
-            var arrList = new ArrayList();
+            ArrayList arrList = new ArrayList();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
@@ -132,73 +133,24 @@ namespace C2MDataRelation
 
         private void button1_Click(object sender, EventArgs e)
         {
+            
+
             if (conn != null && conn.State == ConnectionState.Open)
             {
                 if (textBox1.Text != "")
                 {
-                    try
+                    if (comboBox1.Text.Equals("Business Object") || comboBox1.Text.Equals("Business Service") || comboBox1.Text.Equals("Data Area"))
                     {
-                        //QUERY BO SCHEMA
-                        richTextBox1.Clear();
-                        string resultSC = @"" + getSchema(textBox1.Text);
-
-                        XmlReader reader = XmlReader.Create(new System.IO.StringReader(resultSC));
-                        while (reader.Read())
+                        try
                         {
-                            switch (reader.NodeType)
-                            {
-                                case XmlNodeType.Element:
-                                    if (reader.Name == "includeBO" || reader.Name == "includeDA" || reader.Name == "includeBS")
-                                    {
-                                        //string includeBO = "";
-                                        //richTextBox1.Text += "<";
-                                        while (reader.MoveToNextAttribute())
-                                        {
-
-                                            richTextBox1.Text += getSchemas(reader.Value);
-                                            break;
-                                            //    richTextBox1.Text += reader.Value + ">";
-                                            //    includeBO = getSchema(reader.Value);
-                                            //    StringReader strReader = new StringReader(includeBO);
-                                            //    while (true)
-                                            //    {
-                                            //        string aLine = strReader.ReadLine();
-                                            //        if (aLine != null)
-                                            //        {
-                                            //            richTextBox1.Text += "  " + aLine + "\n";
-                                            //        }
-                                            //        else
-                                            //        {
-                                            //            break;
-                                            //        }
-                                            //    }
-                                            //    richTextBox1.Text += "</" + reader.Value + ">\n";
-                                            //    break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        richTextBox1.Text += "<" + reader.Name;
-                                        while (reader.MoveToNextAttribute())
-                                        {
-                                            richTextBox1.Text += " " + reader.Name + "='" + reader.Value + "'";
-                                        }
-                                        richTextBox1.Text += ">\n";
-                                        break;
-                                    }
-                                    break;
-                                case XmlNodeType.Text:
-                                    richTextBox1.Text += reader.Value;
-                                    break;
-                                case XmlNodeType.EndElement:
-                                    richTextBox1.Text += "</" + reader.Name + ">\n";
-                                    break;
-                            }
+                            //QUERY BO SCHEMA
+                            richTextBox1.Clear();
+                            richTextBox1.Text = getSchemas(textBox1.Text);
                         }
-                    }
-                    catch (Exception err)
-                    {
-                        MessageBox.Show(err.Message);
+                        catch (Exception err)
+                        {
+                            MessageBox.Show(err.Message);
+                        }
                     }
                 }
                 else
@@ -223,6 +175,50 @@ namespace C2MDataRelation
         }
 
         private void Form1_Load_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (conn != null && conn.State == ConnectionState.Open)
+            {
+                if (textBox1.Text != "")
+                {
+                    try
+                    {
+                        //QUERY BO SCHEMA
+                        richTextBox1.Clear();
+                        ArrayList arr = findSchemaAffected(textBox1.Text);
+                        if (arr.Count == 0)
+                        {
+                            MessageBox.Show("Schema is not reference in other schema");
+                        }
+                        else
+                        {
+                            foreach (string schema in arr)
+                            {
+                                richTextBox1.AppendText(schema + "\n");
+                            }
+                        }
+                    }
+                    catch (Exception err)
+                    {
+                        MessageBox.Show(err.Message);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please enter an objects name");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Connection to database is not initiated!");
+            }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
