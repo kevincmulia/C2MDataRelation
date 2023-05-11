@@ -52,6 +52,7 @@ namespace C2MDataRelation
         
         private ArrayList findSchemaAffected(string schemaName) { 
             string query = "SELECT schema_name from f1_schema where schema_defn like '%\""+schemaName+"\"%'";
+            //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
             ArrayList arrList = new ArrayList();
             using (OracleDataReader orr = orc.ExecuteReader())
@@ -60,7 +61,7 @@ namespace C2MDataRelation
                 {
                     while (orr.Read())
                     {
-                       arrList.Add(orr.GetString(0));
+                        arrList.Add(orr.GetString(0));
                     }
                 }
             }
@@ -155,7 +156,7 @@ namespace C2MDataRelation
                 }
                 else
                 {
-                    MessageBox.Show("Enter Business Object's name!");
+                    MessageBox.Show("Please enter an objects name");
                 }
             }
             else
