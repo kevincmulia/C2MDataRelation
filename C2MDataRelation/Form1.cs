@@ -67,6 +67,48 @@ namespace C2MDataRelation
             return arrList;
         }
 
+        private string getSchemas(string schemaName)
+        {
+            string temp = "";
+            string schema = @"" + getSchema(schemaName);
+            XmlReader reader = XmlReader.Create(new System.IO.StringReader(schema));
+            while (reader.Read())
+            {
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        if (reader.Name == "includeBO" || reader.Name == "includeDA" || reader.Name == "includeBS")
+                        {
+                            temp += "<";
+                            while (reader.MoveToNextAttribute())
+                            {
+                                temp += reader.Value + ">\n";
+                                temp += getSchemas(reader.Value) + "</" + reader.Value + ">\n";
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            temp += "<" + reader.Name;
+                            while (reader.MoveToNextAttribute())
+                            {
+                                temp += " " + reader.Name + "='" + reader.Value + "'";
+                            }
+                            temp += ">\n";
+                            break;
+                        }
+                        return temp;
+                    case XmlNodeType.Text:
+                        temp += reader.Value;
+                        break;
+                    case XmlNodeType.EndElement:
+                        temp += "</" + reader.Name + ">\n";
+                        break;
+                }
+            }
+            return temp;
+        }
+
         //GET BUSINESS OBJECT SCHEMA
         private string getSchema(string schemaName) {
             string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + schemaName + "'";
@@ -96,42 +138,42 @@ namespace C2MDataRelation
                 {
                     try
                     {
-                        //bool
-                        bool search = false;
-
                         //QUERY BO SCHEMA
                         richTextBox1.Clear();
                         string resultSC = @"" + getSchema(textBox1.Text);
-                        //richTextBox1.Text = resultSC;
 
                         XmlReader reader = XmlReader.Create(new System.IO.StringReader(resultSC));
                         while (reader.Read())
                         {
-                            switch(reader.NodeType)
+                            switch (reader.NodeType)
                             {
                                 case XmlNodeType.Element:
-                                    if(reader.Name == "includeBO" || reader.Name == "includeDA" || reader.Name == "includeBS")
+                                    if (reader.Name == "includeBO" || reader.Name == "includeDA" || reader.Name == "includeBS")
                                     {
-                                        string includeBO = "";
-                                        richTextBox1.Text += "<";
+                                        //string includeBO = "";
+                                        //richTextBox1.Text += "<";
                                         while (reader.MoveToNextAttribute())
                                         {
-                                            richTextBox1.Text += reader.Value + ">";
-                                            includeBO = getSchema(reader.Value);
-                                            StringReader strReader = new StringReader(includeBO);
-                                            while (true)
-                                            {
-                                                string aLine = strReader.ReadLine();
-                                                if (aLine != null)
-                                                {
-                                                    richTextBox1.Text += "  " + aLine + "\n";
-                                                }
-                                                else
-                                                {
-                                                    break;
-                                                }
-                                            }
-                                            richTextBox1.Text += "</" + reader.Value + ">\n";
+
+                                            richTextBox1.Text += getSchemas(reader.Value);
+                                            break;
+                                            //    richTextBox1.Text += reader.Value + ">";
+                                            //    includeBO = getSchema(reader.Value);
+                                            //    StringReader strReader = new StringReader(includeBO);
+                                            //    while (true)
+                                            //    {
+                                            //        string aLine = strReader.ReadLine();
+                                            //        if (aLine != null)
+                                            //        {
+                                            //            richTextBox1.Text += "  " + aLine + "\n";
+                                            //        }
+                                            //        else
+                                            //        {
+                                            //            break;
+                                            //        }
+                                            //    }
+                                            //    richTextBox1.Text += "</" + reader.Value + ">\n";
+                                            //    break;
                                         }
                                     }
                                     else
@@ -142,6 +184,7 @@ namespace C2MDataRelation
                                             richTextBox1.Text += " " + reader.Name + "='" + reader.Value + "'";
                                         }
                                         richTextBox1.Text += ">\n";
+                                        break;
                                     }
                                     break;
                                 case XmlNodeType.Text:
