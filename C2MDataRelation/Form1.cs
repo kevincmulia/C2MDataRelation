@@ -14,6 +14,7 @@ using System.Collections;
 using System.Xml;
 using System.IO;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Xml.Linq;
 
 namespace C2MDataRelation
 {
@@ -37,6 +38,7 @@ namespace C2MDataRelation
                 MessageBox.Show(err.Message);
             }
         }
+
         public Form1()
         {
             InitializeComponent();
@@ -50,6 +52,52 @@ namespace C2MDataRelation
             
         }
         
+        private void AddNode(XmlNode inXmlNode, TreeNode inTreeNode)
+        {
+            XmlNode xNode;
+            TreeNode tNode;
+            XmlNodeList nodeList;
+            int i = 0;
+            if (inXmlNode.HasChildNodes)
+            {
+                nodeList = inXmlNode.ChildNodes;
+                for (i = 0; i <= nodeList.Count - 1; i++)
+                {
+                    xNode = inXmlNode.ChildNodes[i];
+                    inTreeNode.Nodes.Add(new TreeNode(xNode.Name));
+                    tNode = inTreeNode.Nodes[i];
+                    AddNode(xNode, tNode);
+                }
+            }
+            else
+            {
+                inTreeNode.Text = inXmlNode.Name.ToString();
+            }
+        }
+
+        private string removeEmpty(string xml)
+        {
+            string line, nxml = "";
+            StringReader sr = new StringReader(xml);
+            while (true)
+            {
+                line = sr.ReadLine();
+                if (line == "<schema>" || line == "</schema>")
+                {
+                    
+                }
+                else
+                {
+                    nxml += line + "\n";
+                }
+                if (line == null)
+                {
+                    break;
+                }
+            }
+            return nxml;
+        }
+
         private ArrayList findSchemaAffected(string schemaName) { 
             string query = "SELECT schema_name from f1_schema where schema_defn like '%\""+schemaName+"\"%'";
             //MessageBox.Show(query);
@@ -69,43 +117,73 @@ namespace C2MDataRelation
             return arrList;
         }
 
-        private string getSchemas(string schemaName)
+        private string printCN(XmlNode parentNode)
         {
             string temp = "";
-            string schema = @"" + getSchema(schemaName);
-            XmlReader reader = XmlReader.Create(new System.IO.StringReader(schema));
-            while (reader.Read())
+            XmlNodeList nl = parentNode.ChildNodes;
+            for (int i = 0; i < nl.Count; i++)
             {
-                switch (reader.NodeType)
+                XmlNode cN = parentNode.ChildNodes[i];
+                if (cN.NodeType == XmlNodeType.Element)
                 {
-                    case XmlNodeType.Element:
-                        if (reader.Name == "includeBO" || reader.Name == "includeDA" || reader.Name == "includeBS")
+                    if (cN.Name == "includeBO" || cN.Name == "includeDA" || cN.Name == "includeBS")
+                    {
+                        temp += getSchemas(cN.Attributes["name"].Value);
+                    }
+                    else if (cN.HasChildNodes)
+                    {
+                        XmlNodeList xnl = cN.ChildNodes;
+                        temp += "<" + cN.Name + ">\n";
+                        temp += printCN(cN);
+                        temp += "</" + cN.Name + ">\n";
+                    }
+                    else if (!cN.HasChildNodes)
+                    {
+                        temp += "<" + cN.Name + "/>\n";
+                    }
+                }
+            }
+            return temp;
+        }
+
+        private string getSchemas(string schemaName)
+        {
+            XmlNodeList cNode;
+            string temp = "";
+            string schema = @"" + getSchema(schemaName);
+            XmlDocument xd = new XmlDocument();
+            xd.LoadXml(schema);
+            XmlNode node = xd.DocumentElement;
+            if (node.HasChildNodes)
+            {
+                cNode = node.ChildNodes;
+                for (int i = 0; i < cNode.Count; i++)
+                {
+                    XmlNode xn = node.ChildNodes[i];
+                    if (xn.NodeType == XmlNodeType.Element)
+                    {
+                        if (xn.Name == "includeBO" || xn.Name == "includeDA" || xn.Name == "includeBS")
                         {
-                            temp += "<";
-                            while (reader.MoveToNextAttribute())
-                            {
-                                temp += reader.Value + ">\n";
-                                temp += getSchemas(reader.Value) + "</" + reader.Value + ">\n";
-                            }
-                            break;
+                            temp += getSchemas(xn.Attributes["name"].Value);
                         }
                         else
                         {
-                            temp += "<" + reader.Name;
-                            while (reader.MoveToNextAttribute())
+                            if (xn.HasChildNodes)
                             {
-                                temp += " " + reader.Name + "='" + reader.Value + "'";
+                                temp += "<" + xn.Name + ">\n";
+                                temp += printCN(xn);
+                                temp += "</" + xn.Name + ">\n";
                             }
-                            temp += ">\n";
-                            break;
+                            else
+                            {
+                                temp += "<" + xn.Name + "/>\n";
+                            }
                         }
-                        return temp;
-                    case XmlNodeType.Text:
-                        temp += reader.Value;
-                        break;
-                    case XmlNodeType.EndElement:
-                        temp += "</" + reader.Name + ">\n";
-                        break;
+                    }
+                    else if (xn.NodeType == XmlNodeType.EndElement)
+                    {
+                        temp += "</" + xn.Name + ">\n";
+                    }
                 }
             }
             return temp;
@@ -134,7 +212,8 @@ namespace C2MDataRelation
 
         private void button1_Click(object sender, EventArgs e)
         {
-            
+            //TREEVIEW LABEL
+            label3.Text = textBox1.Text;
 
             if (conn != null && conn.State == ConnectionState.Open)
             {
@@ -144,9 +223,33 @@ namespace C2MDataRelation
                     {
                         try
                         {
-                            //QUERY BO SCHEMA
+                            //GET RESULT OF ALL SCHEMA
+                            string allSchema = "<" + textBox1.Text + ">\n" + getSchemas(textBox1.Text) + "</" + textBox1.Text + ">";
+
+                            //FILL TREEVIEW
+                            string xmlTV = removeEmpty(allSchema);
+                            XmlDocument xmldoc = new XmlDocument();
+                            xmldoc.LoadXml(xmlTV);
+                            treeView1.Nodes.Clear();
+                            treeView1.Nodes.Add(new TreeNode(xmldoc.DocumentElement.Name));
+                            TreeNode node = new TreeNode();
+                            node = treeView1.Nodes[0];
+                            AddNode(xmldoc.DocumentElement, node);
+
+                            //OVERALL SCHEMA
                             richTextBox1.Clear();
-                            richTextBox1.Text = getSchemas(textBox1.Text);
+                            XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
+                            xmlWriterSettings.Indent = true;
+                            xmlWriterSettings.Encoding = Encoding.UTF8;
+                            xmlWriterSettings.NewLineOnAttributes = true;
+                            using(StringWriter sw = new StringWriter())
+                            {
+                                using(var xw = XmlWriter.Create(sw,xmlWriterSettings))
+                                {
+                                    xmldoc.Save(xw);
+                                }
+                                richTextBox1.Text = sw.ToString();
+                            }
                         }
                         catch (Exception err)
                         {
