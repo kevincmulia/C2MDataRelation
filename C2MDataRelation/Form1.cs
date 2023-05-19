@@ -147,66 +147,51 @@ namespace C2MDataRelation
         }
 
         
-        private ArrayList findUsageRuleReferences(string usageRuleName) { 
-            string query = "SElect usg_rule_cd from D1_USG_RULE where referred_usg_grp_cd = '"+usageRuleName+"'";
+        private List<UsageRule> findUsageRuleReferences(string usageRuleName) { 
+            string query = "SElect * from D1_USG_RULE where referred_usg_grp_cd = '"+usageRuleName+"'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            ArrayList arrList = new ArrayList();
+            List<UsageRule> result = new List<UsageRule>();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                        arrList.Add(orr.GetString(0));
+                        result.Add(new UsageRule(orr));
                     }
                 }
             }
-            //if arraylist.size = 0 then its not included in other schema
-            return arrList;
-        }
-        private ArrayList findUsageGroupAffected(string usageRuleName) { 
-            string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_grp_cd = '"+usageRuleName+"' or referred_usg_grp_cd = '"+usageRuleName+"';";
-            //MessageBox.Show(query);
-            OracleCommand orc = new OracleCommand(query, conn);
-            ArrayList arrList = new ArrayList();
-            using (OracleDataReader orr = orc.ExecuteReader())
-            {
-                if (orr.HasRows)
-                {
-                    while (orr.Read())
-                    {
-                        arrList.Add(orr.GetString(0));
-                    }
-                }
-            }
-            //if arraylist.size = 0 then its not included in other schema
-            return arrList;
-        }
-        private string getBODataArea(string usageRuleName)
-        {
-            string query = "SElect BO_DATA_AREA from D1_USG_RULE where usg_rule_cd = '"+usageRuleName+"';";
-            //MessageBox.Show(query);
-            OracleCommand orc = new OracleCommand(query, conn);
-            String result ="";
-            using (OracleDataReader orr = orc.ExecuteReader())
-            {
-                if (orr.HasRows)
-                {
-                    while (orr.Read())
-                    {
-                        result = (orr.GetString(0));
-                    }
-                }
-            }
+            //if list.size = 0 then its not included in other schema
             return result;
         }
         /**
-         * return map of usage rule nameand the data area given arraylist of usage rule name
+        * return list of usage group that is affected by the usage rule name whether its called by other usage rule and its own usage group
+        * **/
+        private List<usageGroup> findUsageGroupAffected(string usageRuleName) { 
+            string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_rule_cd = '"+usageRuleName+"' or referred_usg_grp_cd = '"+usageRuleName+"';";
+            //MessageBox.Show(query);
+            OracleCommand orc = new OracleCommand(query, conn);
+            List<usageGroup> result = new List<usageGroup>();
+            using (OracleDataReader orr = orc.ExecuteReader())
+            {
+                if (orr.HasRows)
+                {
+                    while (orr.Read())
+                    {
+                        result.Add(new usageGroup(orr.GetString(0)));
+                    }
+                }
+            }
+            //if arraylist.size = 0 then its not included in other schema
+            return result;
+        }
+        /**
+         * return usage rule given arraylist of usage rule name
          * **/
-        private Dictionary <string, string> getBODataArea(ArrayList usageRuleList)
+        private List<UsageRule> getUsageRule(List<String> usageRuleList)
         {
-            string query = "SElect usg_rule_cd,BO_DATA_AREA from D1_USG_RULE where";
+            string query = "SElect * from D1_USG_RULE where";
             foreach (string usageRuleName in usageRuleList) { 
                    query = query+" usg_rule_cd ='"+usageRuleName+"' or";
             }
@@ -214,52 +199,78 @@ namespace C2MDataRelation
             query= query+";";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            Dictionary <string, string> result =new Dictionary<string, string>();
+            List<UsageRule> result =new List<UsageRule>();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                        result.Add(orr.GetString(0),orr.GetString(1));
+                        result.Add(new UsageRule(orr));
                     }
                 }
             }
             return result;
         }
-        private ArrayList findUsageRulesInTheSameGroup(string usageRuleName) { 
-            string query = "select * from D1_USG_RULE where usg_grp_cd in (select usg_grp_cd from d1_usg_rule where usg_rule_cd ='"+usageRuleName+"';";
+        /**
+         * returnlist of usage rule given the usage group name
+         * **/
+        private List<UsageRule> getUsageRuleFromUsageGroup(string usageGroup)
+        {
+            string query = "SElect * from D1_USG_RULE where usg_grp_cd = '" + usageGroup + "';";
+            query = query.Substring(0, query.Length - 3);
+            query = query + ";";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            ArrayList arrList = new ArrayList();
+            List<UsageRule> result = new List<UsageRule>();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                        arrList.Add(orr.GetString(0));
+                        result.Add(new UsageRule(orr));
+                    }
+                }
+            }
+            return result;
+        }
+        /**
+         * return list of usage rules that has the same group as the given usage rule
+         * **/
+        private List<UsageRule> findUsageRulesInTheSameGroup(string usageRuleName) { 
+            string query = "select * from D1_USG_RULE where usg_grp_cd in (select usg_grp_cd from d1_usg_rule where usg_rule_cd ='"+usageRuleName+"';";
+            //MessageBox.Show(query);
+            OracleCommand orc = new OracleCommand(query, conn);
+            List<UsageRule> result = new List<UsageRule>();
+            using (OracleDataReader orr = orc.ExecuteReader())
+            {
+                if (orr.HasRows)
+                {
+                    while (orr.Read())
+                    {
+                        result.Add(new UsageRule(orr));
                     }
                 }
             }
             //if arraylist.size = 0 then its not included in other schema
-            return arrList;
+            return result;
         }
         /**
-         * return map of sequence and the data area given usage rule name
+         * return list of eligibility criteria given the usage rule name
          * **/
-        private Dictionary <string, string> getEligibilityCriteria(string usageRuleName) { 
-            string query = "select crit_seq,bo_data_area from D1_USG_RULE_ELIG_CRIT where usg_rule_cd = '"+usageRuleName+"'";
+        private List<EligibilityCriteria> getEligibilityCriterias(string usageRuleName) { 
+            string query = "select * from D1_USG_RULE_ELIG_CRIT where usg_rule_cd = '"+usageRuleName+"'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            Dictionary <string, string> result =new Dictionary<string, string>();
+            List<EligibilityCriteria> result =new List<EligibilityCriteria>();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                        result.Add(orr.GetString(0),orr.GetString(1));
+                        result.Add(new EligibilityCriteria(orr));
                     }
                 }
             }
@@ -445,6 +456,10 @@ namespace C2MDataRelation
         {
 
         }
-        
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
+        }
     }
 }
