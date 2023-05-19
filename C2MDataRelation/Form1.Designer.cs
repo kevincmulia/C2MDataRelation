@@ -106,7 +106,9 @@
             this.comboBox1.Items.AddRange(new object[] {
             "Business Object",
             "Business Service",
-            "Data Area"});
+            "Data Area",
+            "Usage Calculation Group",
+            "Usage Calculation Rule"});
             this.comboBox1.Location = new System.Drawing.Point(462, 45);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(308, 37);

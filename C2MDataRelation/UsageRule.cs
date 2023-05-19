@@ -36,6 +36,7 @@ namespace C2MDataRelation
             this.ReferredUsageGroup = orr.GetString(4);
             this.UsageRuleType = orr.GetString(5);
             this.BoDataArea = orr.GetString(7);
+            this.EligibilityCriteria = new List<EligibilityCriteria>();
         }
 
         public string Name { get => name; set => name = value; }

@@ -169,7 +169,7 @@ namespace C2MDataRelation
         * return list of usage group that is affected by the usage rule name whether its called by other usage rule and its own usage group
         * **/
         private List<usageGroup> findUsageGroupAffected(string usageRuleName) { 
-            string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_rule_cd = '"+usageRuleName+"' or referred_usg_grp_cd = '"+usageRuleName+"';";
+            string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_rule_cd = '"+usageRuleName+"' or referred_usg_grp_cd = '"+usageRuleName+"'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
             List<usageGroup> result = new List<usageGroup>();
@@ -196,7 +196,6 @@ namespace C2MDataRelation
                    query = query+" usg_rule_cd ='"+usageRuleName+"' or";
             }
             query = query.Substring(0,query.Length-3);
-            query= query+";";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
             List<UsageRule> result =new List<UsageRule>();
@@ -217,10 +216,9 @@ namespace C2MDataRelation
          * **/
         private List<UsageRule> getUsageRuleFromUsageGroup(string usageGroup)
         {
-            string query = "SElect * from D1_USG_RULE where usg_grp_cd = '" + usageGroup + "';";
-            query = query.Substring(0, query.Length - 3);
-            query = query + ";";
-            //MessageBox.Show(query);
+            string query = "SElect * from D1_USG_RULE where usg_grp_cd = '" + usageGroup + "'";
+            
+            MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
             List<UsageRule> result = new List<UsageRule>();
             using (OracleDataReader orr = orc.ExecuteReader())
@@ -239,7 +237,7 @@ namespace C2MDataRelation
          * return list of usage rules that has the same group as the given usage rule
          * **/
         private List<UsageRule> findUsageRulesInTheSameGroup(string usageRuleName) { 
-            string query = "select * from D1_USG_RULE where usg_grp_cd in (select usg_grp_cd from d1_usg_rule where usg_rule_cd ='"+usageRuleName+"';";
+            string query = "select * from D1_USG_RULE where usg_grp_cd in (select usg_grp_cd from d1_usg_rule where usg_rule_cd ='"+usageRuleName+"'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
             List<UsageRule> result = new List<UsageRule>();
@@ -372,9 +370,9 @@ namespace C2MDataRelation
                             xmlWriterSettings.Indent = true;
                             xmlWriterSettings.Encoding = Encoding.UTF8;
                             xmlWriterSettings.NewLineOnAttributes = true;
-                            using(StringWriter sw = new StringWriter())
+                            using (StringWriter sw = new StringWriter())
                             {
-                                using(var xw = XmlWriter.Create(sw,xmlWriterSettings))
+                                using (var xw = XmlWriter.Create(sw, xmlWriterSettings))
                                 {
                                     xmldoc.Save(xw);
                                 }
@@ -385,6 +383,19 @@ namespace C2MDataRelation
                         {
                             MessageBox.Show(err.Message);
                         }
+                    }
+                    else if (comboBox1.Text.Equals("Usage Calculation Group"))
+                    { //Usage Calculation Group
+                        richTextBox1.Clear();
+
+                        string usageRuleGroupName = textBox1.Text;
+                        usageGroup ug = new usageGroup(usageRuleGroupName);
+                        ug.UsageRuleList = getUsageRuleFromUsageGroup(usageRuleGroupName);
+                        richTextBox1.Text = ug.print();
+                    } 
+                    else if (comboBox1.Text.Equals("Usage Calculation Rule"))
+                    { //Usage Calculation Rule
+
                     }
                 }
                 else
