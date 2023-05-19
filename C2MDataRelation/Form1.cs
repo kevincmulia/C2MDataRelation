@@ -211,6 +211,27 @@ namespace C2MDataRelation
             }
             return result;
         }
+        //get usage rule basedo n the name
+        private UsageRule getUsageRule(string usageRuleName)
+        {
+            string query = "SElect * from D1_USG_RULE where  usg_rule_cd ='" + usageRuleName + "'";
+            
+            //MessageBox.Show(query);
+            OracleCommand orc = new OracleCommand(query, conn);
+            List<UsageRule> result = new List<UsageRule>();
+            using (OracleDataReader orr = orc.ExecuteReader())
+            {
+                if (orr.HasRows)
+                {
+                    while (orr.Read())
+                    {
+                       return (new UsageRule(orr));
+                    }
+                }
+            }
+            return null;
+        }
+
         /**
          * returnlist of usage rule given the usage group name
          * **/
@@ -395,7 +416,13 @@ namespace C2MDataRelation
                     } 
                     else if (comboBox1.Text.Equals("Usage Calculation Rule"))
                     { //Usage Calculation Rule
+                        string usageRuleName = textBox1.Text;
+                        UsageRule temp = getUsageRule(usageRuleName);
+                        string usageRuleGroupName = temp.UsageGroup;
+                        usageGroup ug = new usageGroup(usageRuleGroupName);
 
+                        ug.UsageRuleList = getUsageRuleFromUsageGroup(usageRuleGroupName);
+                        richTextBox1.Text = ug.print();
                     }
                 }
                 else
@@ -470,6 +497,13 @@ namespace C2MDataRelation
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            //richTextBox1.Clear();
+            //richTextBox1.Text = e.ToString();
+        }
+        private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            richTextBox1.Clear();
+            richTextBox1.Text = e.Node.Text;
 
         }
     }

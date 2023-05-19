@@ -15,6 +15,7 @@ namespace C2MDataRelation
         String usageRuleType;
         String boDataArea;
 
+
         public EligibilityCriteria(string usageGroup, string usageRule, int sequence, string usageRuleType, string boDataArea)
         {
             this.usageGroup = usageGroup;
@@ -24,11 +25,11 @@ namespace C2MDataRelation
             this.boDataArea = boDataArea;
         }
         public EligibilityCriteria(OracleDataReader orr) {
-            this.usageGroup = orr.GetString(0);
-            this.usageRule = orr.GetString(1);
-            this.sequence = orr.GetInt32(2);
-            this.usageRuleType = orr.GetString(3);
-            this.boDataArea = orr.GetString(13);
+            this.usageGroup = orr.GetString(orr.GetOrdinal("USG_GRP_CD"));
+            this.usageRule = orr.GetString(orr.GetOrdinal("USG_RULE_CD"));
+            this.sequence = orr.GetInt16(orr.GetOrdinal("EXE_SEQ"));
+            this.usageRuleType = orr.GetString(orr.GetOrdinal("BUS_OBJ_CD"));
+            this.boDataArea = orr.GetString(orr.GetOrdinal("BO_DATA_AREA"));
         }
 
         public int Sequence { get => sequence; set => sequence = value; }

@@ -30,12 +30,12 @@ namespace C2MDataRelation
         }
         public UsageRule(OracleDataReader orr)
         {
-            this.usageGroup = orr.GetString(0);
-            this.name = orr.GetString(1);
-            this.Sequence = orr.GetInt16(2);
-            this.ReferredUsageGroup = orr.GetString(4);
-            this.UsageRuleType = orr.GetString(5);
-            this.BoDataArea = orr.GetString(7);
+            this.usageGroup = orr.GetString(orr.GetOrdinal("USG_GRP_CD"));
+            this.name = orr.GetString(orr.GetOrdinal("USG_RULE_CD"));
+            this.Sequence = orr.GetInt16(orr.GetOrdinal("EXE_SEQ"));
+            this.ReferredUsageGroup = orr.GetString(orr.GetOrdinal("REFERRED_USG_GRP_CD"));
+            this.UsageRuleType = orr.GetString(orr.GetOrdinal("BUS_OBJ_CD"));
+            this.BoDataArea = orr.GetString(orr.GetOrdinal("BO_DATA_AREA"));
             this.EligibilityCriteria = new List<EligibilityCriteria>();
         }
 
