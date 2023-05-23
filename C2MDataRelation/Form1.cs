@@ -15,6 +15,7 @@ using System.Xml;
 using System.IO;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Xml.Linq;
+using System.Xml.Schema;
 
 namespace C2MDataRelation
 {
@@ -22,6 +23,7 @@ namespace C2MDataRelation
     {
         //GLOBAL VAR
         OracleConnection conn;
+        XmlDocument xmldoc;
 
         public void connToDB()
         {
@@ -75,7 +77,7 @@ namespace C2MDataRelation
             }
         }
 
-        private string removeEmpty(string xml)
+        private string removeSchema(string xml)
         {
             string line, nxml = "";
             StringReader sr = new StringReader(xml);
@@ -139,7 +141,27 @@ namespace C2MDataRelation
                     }
                     else if (!cN.HasChildNodes)
                     {
-                        temp += "<" + cN.Name + "/>\n";
+                        if (cN.Name.ToLower().Contains("uihint"))
+                        {
+
+                        }
+                        else
+                        {
+                            temp += "<" + cN.Name;
+                            foreach (XmlAttribute att in cN.Attributes)
+                            {
+                                if (att.Name.ToLower().Contains("uihint"))
+                                {
+
+                                }
+                                else
+                                {
+                                    temp += " " + att.Name + "=\"" + att.Value + "\"";
+                                }
+                            }
+                            temp += "/>\n";
+                        }
+                        //temp += "<" + cN.Name + "/>\n";
                     }
                 }
             }
@@ -325,7 +347,26 @@ namespace C2MDataRelation
                             }
                             else
                             {
-                                temp += "<" + xn.Name + "/>\n";
+                                if (xn.Name.ToLower().Contains("uihint"))
+                                {
+
+                                }
+                                else
+                                {
+                                    temp += "<" + xn.Name;
+                                    foreach (XmlAttribute att in xn.Attributes)
+                                    {
+                                        if (att.Name.ToLower().Contains("uihint"))
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            temp += " " + att.Name + "=\"" + att.Value + "\"";
+                                        }
+                                    }
+                                    temp += "/>\n";
+                                }
                             }
                         }
                     }
@@ -359,6 +400,35 @@ namespace C2MDataRelation
             return "error";
         }
 
+        public void fillTV(string allSchema)
+        {
+            string xmlTV = removeSchema(allSchema);
+            xmldoc = new XmlDocument();
+            xmldoc.LoadXml(xmlTV);
+            treeView1.Nodes.Clear();
+            treeView1.Nodes.Add(new TreeNode(xmldoc.DocumentElement.Name));
+            TreeNode node = new TreeNode();
+            node = treeView1.Nodes[0];
+            AddNode(xmldoc.DocumentElement, node);
+        }
+
+        public void printRTB()
+        {
+            richTextBox1.Clear();
+            XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
+            xmlWriterSettings.Indent = true;
+            xmlWriterSettings.Encoding = Encoding.UTF8;
+            xmlWriterSettings.NewLineOnAttributes = true;
+            using (StringWriter sw = new StringWriter())
+            {
+                using (var xw = XmlWriter.Create(sw, xmlWriterSettings))
+                {
+                    xmldoc.Save(xw);
+                }
+                richTextBox1.Text = sw.ToString();
+            }
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             //TREEVIEW LABEL
@@ -374,31 +444,13 @@ namespace C2MDataRelation
                         {
                             //GET RESULT OF ALL SCHEMA
                             string allSchema = "<" + textBox1.Text + ">\n" + getSchemas(textBox1.Text) + "</" + textBox1.Text + ">";
+                            MessageBox.Show(allSchema);
 
                             //FILL TREEVIEW
-                            string xmlTV = removeEmpty(allSchema);
-                            XmlDocument xmldoc = new XmlDocument();
-                            xmldoc.LoadXml(xmlTV);
-                            treeView1.Nodes.Clear();
-                            treeView1.Nodes.Add(new TreeNode(xmldoc.DocumentElement.Name));
-                            TreeNode node = new TreeNode();
-                            node = treeView1.Nodes[0];
-                            AddNode(xmldoc.DocumentElement, node);
+                            fillTV(allSchema);
 
                             //OVERALL SCHEMA
-                            richTextBox1.Clear();
-                            XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
-                            xmlWriterSettings.Indent = true;
-                            xmlWriterSettings.Encoding = Encoding.UTF8;
-                            xmlWriterSettings.NewLineOnAttributes = true;
-                            using (StringWriter sw = new StringWriter())
-                            {
-                                using (var xw = XmlWriter.Create(sw, xmlWriterSettings))
-                                {
-                                    xmldoc.Save(xw);
-                                }
-                                richTextBox1.Text = sw.ToString();
-                            }
+                            printRTB();
                         }
                         catch (Exception err)
                         {
