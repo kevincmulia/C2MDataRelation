@@ -17,7 +17,6 @@ namespace C2MDataRelation
         String usageRuleType;
         String boDataArea;
         System.Collections.Generic.List<EligibilityCriteria> eligibilityCriteria;
-        String schema;
 
         public UsageRule(string usageGroup, string name, int sequence, string usageRuleType, string boDataArea, string referredUsageGroup, List<EligibilityCriteria> eligibilityCriteria)
         {
@@ -38,7 +37,6 @@ namespace C2MDataRelation
             this.UsageRuleType = orr.GetString(orr.GetOrdinal("BUS_OBJ_CD"));
             this.BoDataArea = orr.GetString(orr.GetOrdinal("BO_DATA_AREA"));
             this.EligibilityCriteria = new List<EligibilityCriteria>();
-            
         }
 
         public string Name { get => name; set => name = value; }
@@ -48,7 +46,6 @@ namespace C2MDataRelation
         public string ReferredUsageGroup { get => referredUsageGroup; set => referredUsageGroup = value; }
         internal List<EligibilityCriteria> EligibilityCriteria { get => eligibilityCriteria; set => eligibilityCriteria = value; }
         public string UsageGroup { get => usageGroup; set => usageGroup = value; }
-        public string Schema { get => schema; set => schema = value; }
 
         public void addEligibilityCriteria(EligibilityCriteria eligibilityCriteria) {
             this.eligibilityCriteria.Add(eligibilityCriteria);
