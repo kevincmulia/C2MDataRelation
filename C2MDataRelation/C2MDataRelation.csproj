@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EligibilityCriteria.cs" />
+    <Compile Include="sq.cs" />
     <Compile Include="usageGroup.cs" />
     <Compile Include="UsageRule.cs" />
     <Compile Include="Form1.cs">

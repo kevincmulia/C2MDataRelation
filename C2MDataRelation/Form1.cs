@@ -23,7 +23,7 @@ namespace C2MDataRelation
     {
         //GLOBAL VAR
         OracleConnection conn;
-        XmlDocument xmldoc;
+        List<UsageRule> usageRulesLoaded;
 
         public void connToDB()
         {
@@ -79,7 +79,7 @@ namespace C2MDataRelation
 
         private string removeSchema(string xml)
         {
-            string line, nxml = "";
+            string line,    nxml = "";
             StringReader sr = new StringReader(xml);
             while (true)
             {
@@ -270,7 +270,11 @@ namespace C2MDataRelation
                 {
                     while (orr.Read())
                     {
-                        result.Add(new UsageRule(orr));
+                        UsageRule ur = new UsageRule(orr);
+                        ur.Schema = getFullSchema(ur.UsageRuleType);
+                        ur.combineSchemaAndBoDataArea();
+                        //ur.getSq();
+                        result.Add(ur);
                     }
                 }
             }
@@ -316,6 +320,9 @@ namespace C2MDataRelation
                 }
             }
             return result;
+        }
+        private string getFullSchema(string schemaName) { 
+            return "<" + schemaName + ">\n" + getSchemas(schemaName) + "</" + schemaName + ">";
         }
         private string getSchemas(string schemaName)
         {
@@ -400,11 +407,9 @@ namespace C2MDataRelation
             return "error";
         }
 
-        public void fillTV(string allSchema)
+        public void fillTV(XmlDocument xmldoc)
         {
-            string xmlTV = removeSchema(allSchema);
-            xmldoc = new XmlDocument();
-            xmldoc.LoadXml(xmlTV);
+            
             treeView1.Nodes.Clear();
             treeView1.Nodes.Add(new TreeNode(xmldoc.DocumentElement.Name));
             TreeNode node = new TreeNode();
@@ -412,13 +417,13 @@ namespace C2MDataRelation
             AddNode(xmldoc.DocumentElement, node);
         }
 
-        public void printRTB()
+        public void printRTB(XmlDocument xmldoc)
         {
             richTextBox1.Clear();
             XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
             xmlWriterSettings.Indent = true;
             xmlWriterSettings.Encoding = Encoding.UTF8;
-            xmlWriterSettings.NewLineOnAttributes = true;
+            xmlWriterSettings.NewLineOnAttributes = false;
             using (StringWriter sw = new StringWriter())
             {
                 using (var xw = XmlWriter.Create(sw, xmlWriterSettings))
@@ -428,7 +433,19 @@ namespace C2MDataRelation
                 richTextBox1.Text = sw.ToString();
             }
         }
+        public XmlDocument changeToXmldoc(String allSchema) {
+            string xmlTV = removeSchema(allSchema);
+            XmlDocument xmldoc = new XmlDocument();
+            xmldoc.LoadXml(xmlTV);
+            return xmldoc;
+        }
+        public void displayTVandRTB(String allSchema) {
+            XmlDocument xmldoc = changeToXmldoc(allSchema);
+            fillTV(xmldoc);
+            printRTB(xmldoc);
 
+
+        }
         private void button1_Click(object sender, EventArgs e)
         {
             //TREEVIEW LABEL
@@ -443,14 +460,17 @@ namespace C2MDataRelation
                         try
                         {
                             //GET RESULT OF ALL SCHEMA
-                            string allSchema = "<" + textBox1.Text + ">\n" + getSchemas(textBox1.Text) + "</" + textBox1.Text + ">";
+                            string allSchema = getFullSchema(textBox1.Text);
                             MessageBox.Show(allSchema);
 
+                            XmlDocument xmldoc = changeToXmldoc(allSchema);
+
                             //FILL TREEVIEW
-                            fillTV(allSchema);
+                            //fillTV(xmldoc);
 
                             //OVERALL SCHEMA
-                            printRTB();
+                            //printRTB(xmldoc);
+                            displayTVandRTB(allSchema);
                         }
                         catch (Exception err)
                         {
@@ -460,21 +480,38 @@ namespace C2MDataRelation
                     else if (comboBox1.Text.Equals("Usage Calculation Group"))
                     { //Usage Calculation Group
                         richTextBox1.Clear();
-
                         string usageRuleGroupName = textBox1.Text;
                         usageGroup ug = new usageGroup(usageRuleGroupName);
                         ug.UsageRuleList = getUsageRuleFromUsageGroup(usageRuleGroupName);
+                        usageRulesLoaded = new List<UsageRule>();
+                        usageRulesLoaded = ug.UsageRuleList;//to be used in another place
                         richTextBox1.Text = ug.print();
                     } 
                     else if (comboBox1.Text.Equals("Usage Calculation Rule"))
                     { //Usage Calculation Rule
                         string usageRuleName = textBox1.Text;
-                        UsageRule temp = getUsageRule(usageRuleName);
-                        string usageRuleGroupName = temp.UsageGroup;
-                        usageGroup ug = new usageGroup(usageRuleGroupName);
+                        bool found = false;
+                        UsageRule usageRule;
+                        foreach (UsageRule ur in usageRulesLoaded) {
+                            if (ur.Name.Equals(usageRuleName))
+                            {
+                                found = true;
+                                usageRule = ur;
+                                displayTVandRTB(ur.Schema);
 
-                        ug.UsageRuleList = getUsageRuleFromUsageGroup(usageRuleGroupName);
-                        richTextBox1.Text = ug.print();
+                            }
+                        }
+                        if (!found) {
+                            usageRule = getUsageRule(usageRuleName);
+                            string usageRuleGroupName = usageRule.UsageGroup;
+                            usageGroup ug = new usageGroup(usageRuleGroupName);
+                            usageRule.Schema = getFullSchema(usageRule.UsageRuleType);
+                            usageRule.combineSchemaAndBoDataArea();
+                            usageRule.getSq();
+                            //MessageBox.Show(usageRule.print());
+                            //displayTVandRTB(usageRule.Schema);
+                            richTextBox1.Text = usageRule.printSQ();
+                        }
                     }
                 }
                 else
@@ -509,26 +546,32 @@ namespace C2MDataRelation
             {
                 if (textBox1.Text != "")
                 {
-                    try
-                    {
-                        //QUERY BO SCHEMA
-                        richTextBox1.Clear();
-                        ArrayList arr = findSchemaAffected(textBox1.Text);
-                        if (arr.Count == 0)
+                    if (comboBox1.Text.Equals("Business Object") || comboBox1.Text.Equals("Business Service") || comboBox1.Text.Equals("Data Area")) 
+                    { 
+                        try
                         {
-                            MessageBox.Show("Schema is not reference in other schema");
-                        }
-                        else
-                        {
-                            foreach (string schema in arr)
+                            //QUERY BO SCHEMA
+                            richTextBox1.Clear();
+                            ArrayList arr = findSchemaAffected(textBox1.Text);
+                            if (arr.Count == 0)
                             {
-                                richTextBox1.AppendText(schema + "\n");
+                                MessageBox.Show("Schema is not reference in other schema");
+                            }
+                            else
+                            {
+                                foreach (string schema in arr)
+                                {
+                                    richTextBox1.AppendText(schema + "\n");
+                                }
                             }
                         }
+                        catch (Exception err)
+                        {
+                            MessageBox.Show(err.Message);
+                        }
                     }
-                    catch (Exception err)
-                    {
-                        MessageBox.Show(err.Message);
+                    else if (comboBox1.Text.Equals("Usage Calculation Rule")) { 
+                        
                     }
                 }
                 else
