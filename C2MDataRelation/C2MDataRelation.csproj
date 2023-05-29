@@ -81,6 +81,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusinessObject.cs" />
+    <Compile Include="BusinessService.cs" />
+    <Compile Include="DataArea.cs" />
     <Compile Include="EligibilityCriteria.cs" />
     <Compile Include="sq.cs" />
     <Compile Include="usageGroup.cs" />
