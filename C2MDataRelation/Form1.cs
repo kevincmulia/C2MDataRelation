@@ -23,7 +23,7 @@ namespace C2MDataRelation
     {
         //GLOBAL VAR
         OracleConnection conn;
-        List<UsageRule> usageRulesLoaded;
+        Dictionary<String,UsageRule> usageRulesLoaded;
 
         public void connToDB()
         {
@@ -190,7 +190,9 @@ namespace C2MDataRelation
         /**
         * return list of usage group that is affected by the usage rule name whether its called by other usage rule and its own usage group
         * **/
-        private List<usageGroup> findUsageGroupAffected(string usageRuleName) { 
+        private List<usageGroup> findUsageGroupAffected(string usageRuleName) {
+            //select usg_grp_cd from D1_USG_RULE where usg_rule_cd ='KM-DSC';
+            //select usg_grp_cd from D1_USG_RULE where referred_usg_grp_cd in (select usg_grp_cd from D1_USG_RULE where usg_rule_cd = 'KM-DSC');
             string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_rule_cd = '"+usageRuleName+"' or referred_usg_grp_cd = '"+usageRuleName+"'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
@@ -483,25 +485,23 @@ namespace C2MDataRelation
                         string usageRuleGroupName = textBox1.Text;
                         usageGroup ug = new usageGroup(usageRuleGroupName);
                         ug.UsageRuleList = getUsageRuleFromUsageGroup(usageRuleGroupName);
-                        usageRulesLoaded = new List<UsageRule>();
-                        usageRulesLoaded = ug.UsageRuleList;//to be used in another place
+                        usageRulesLoaded = new Dictionary<string, UsageRule>();
+                        foreach (UsageRule ur in ug.UsageRuleList)//to be used in another place
+                        {
+                            usageRulesLoaded.Add(ur.Name, ur);
+                        }
                         richTextBox1.Text = ug.print();
                     } 
                     else if (comboBox1.Text.Equals("Usage Calculation Rule"))
                     { //Usage Calculation Rule
                         string usageRuleName = textBox1.Text;
-                        bool found = false;
                         UsageRule usageRule;
-                        foreach (UsageRule ur in usageRulesLoaded) {
-                            if (ur.Name.Equals(usageRuleName))
-                            {
-                                found = true;
-                                usageRule = ur;
-                                displayTVandRTB(ur.Schema);
-
-                            }
+                        if (usageRulesLoaded.ContainsKey(usageRuleName))
+                        {
+                            usageRule = usageRulesLoaded[usageRuleName];
+                            displayTVandRTB(usageRule.Schema);
                         }
-                        if (!found) {
+                        else {
                             usageRule = getUsageRule(usageRuleName);
                             string usageRuleGroupName = usageRule.UsageGroup;
                             usageGroup ug = new usageGroup(usageRuleGroupName);
@@ -570,8 +570,26 @@ namespace C2MDataRelation
                             MessageBox.Show(err.Message);
                         }
                     }
-                    else if (comboBox1.Text.Equals("Usage Calculation Rule")) { 
+                    else if (comboBox1.Text.Equals("Usage Calculation Rule")) {
+                        string usageRuleName = textBox1.Text;
                         
+                        UsageRule usageRule;
+                        String result = "";
+                        if (usageRulesLoaded.ContainsKey(usageRuleName))
+                        {
+                            usageRule = usageRulesLoaded[usageRuleName];
+                            foreach (KeyValuePair<string, UsageRule> entry in usageRulesLoaded)
+                            {
+                                //entry.Value or entry.Key
+                                if (!entry.Key.Equals(usageRule.Name) && entry.Value.sqListEquals(usageRule)) {
+                                    result += entry.Value.Name + "\n";
+                                }
+                            }
+                        }
+                        else { 
+
+                        }
+
                     }
                 }
                 else
