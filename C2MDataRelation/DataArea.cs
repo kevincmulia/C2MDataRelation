@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace C2MDataRelation
 {
-    internal class DataArea
+    class DataArea
     {
         private string data_area_cd, owner_flg, f1_ext_data_area_cd;
+        private string rootSchema, finalSchema;
         private int version;
 
         public DataArea()
@@ -19,12 +21,14 @@ namespace C2MDataRelation
             this.f1_ext_data_area_cd=null;
         }
 
-        public DataArea(string data_area_cd, int version, string owner_flg, string f1_ext_data_area_cd)
+        public DataArea(OracleDataReader odr)
         {
-            this.data_area_cd = data_area_cd;
-            this.version = version;
-            this.owner_flg = owner_flg;
-            this.f1_ext_data_area_cd = f1_ext_data_area_cd;
+            this.data_area_cd = odr.GetString(odr.GetOrdinal("DATA_AREA_CD"));
+            this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
+            this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG"));
+            this.f1_ext_data_area_cd = odr.GetString(odr.GetOrdinal("f1_ext_data_area_cd"));
+            this.rootSchema = "";
+            this.finalSchema = "";
         }
 
         public void setData_area_cd(string data_area_cd) { this.data_area_cd = data_area_cd; }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace C2MDataRelation
 {
-    internal class BusinessService
+    class BusinessService
     {
         private string bus_svc_cd, svc_name, owner_flg, app_svc_id;
+        private string rootSchema, finalSchema;
         private int version;
 
         public BusinessService()
@@ -20,13 +22,15 @@ namespace C2MDataRelation
             this.app_svc_id = null;
         }
 
-        public BusinessService(string bus_svc_cd, string svc_name, int version, string owner_flg, string app_svc_id)
+        public BusinessService(OracleDataReader odr)
         {
-            this.bus_svc_cd = bus_svc_cd;
-            this.svc_name = svc_name;
-            this.version = version;
-            this.owner_flg = owner_flg;
-            this.app_svc_id = app_svc_id;
+            this.bus_svc_cd = odr.GetString(odr.GetOrdinal("BUS_SVC_CD"));
+            this.svc_name = odr.GetString(odr.GetOrdinal("SVC_NAME"));
+            this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
+            this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG"));
+            this.app_svc_id = odr.GetString(odr.GetOrdinal("APP_SVC_ID"));
+            this.rootSchema = "";
+            this.finalSchema = "";
         }
 
         public void setBus_svc_cd(string bus_svc_cd) { this.bus_svc_cd = bus_svc_cd; }

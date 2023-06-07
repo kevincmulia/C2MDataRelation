@@ -24,6 +24,9 @@ namespace C2MDataRelation
         //GLOBAL VAR
         OracleConnection conn;
         List<UsageRule> usageRulesLoaded;
+        BusinessObject businessObject;
+        BusinessService businessService;
+        DataArea dataArea;
 
         public void connToDB()
         {
@@ -446,6 +449,28 @@ namespace C2MDataRelation
 
 
         }
+        public void getInfo(string name, string type)
+        {
+            string queries = "";
+
+            if (type == "Business Object")
+                queries = "SELECT * FROM F1_BUS_OBJ WHERE BUS_OBJ_CD='" + name + "'";
+            else if(type == "Business Service")
+                queries = "SELECT * FROM F1_BUS_SVC WHERE BUS_SVC_CD='" + name + "'";
+            else if(type == "Data Area")
+                queries = "SELECT * FROM F1_DATA_AREA WHERE DATA_AREA_CD='" + name + "'";
+
+            OracleCommand orc = new OracleCommand(queries, conn);
+            using (OracleDataReader orr = orc.ExecuteReader())
+            {
+                if (type == "Business Object")
+                    businessObject = new BusinessObject(orr);
+                else if (type == "Business Service")
+                    businessService = new BusinessService(orr);
+                else if (type == "Data Area")
+                    dataArea = new DataArea(orr);
+            }
+        }
         private void button1_Click(object sender, EventArgs e)
         {
             //TREEVIEW LABEL
@@ -457,6 +482,10 @@ namespace C2MDataRelation
                 {
                     if (comboBox1.Text.Equals("Business Object") || comboBox1.Text.Equals("Business Service") || comboBox1.Text.Equals("Data Area"))
                     {
+                        //if (comboBox1.Text.Equals("Business Object"))
+                        //{
+                        //    getInfo(textBox1.Text, comboBox1.Text);
+                        //}
                         try
                         {
                             //GET RESULT OF ALL SCHEMA

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
@@ -7,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace C2MDataRelation
 {
-    internal class BusinessObject
+    class BusinessObject
     {
         private string bus_obj_cd, maint_obj_cd, app_svc_id, life_cycle_bo_cd, owner_flg, parent_bo_cd, instance_ctrl_flg;
+        private string rootSchema, finalSchema;
         private int version;
 
         public BusinessObject()
@@ -22,18 +24,22 @@ namespace C2MDataRelation
             this.owner_flg = null;
             this.parent_bo_cd = null;
             this.instance_ctrl_flg = null;
+            this.rootSchema = null;
+            this.finalSchema = null;
         }
 
-        public BusinessObject(string bus_obj_cd, string maint_obj_cd, string app_svc_id, string life_cycle_bo_cd, string owner_flg, string parent_bo_cd, string instance_ctrl_flg, int version)
+        public BusinessObject(OracleDataReader odr)
         {
-            this.bus_obj_cd = bus_obj_cd;
-            this.maint_obj_cd = maint_obj_cd;
-            this.app_svc_id = app_svc_id;
-            this.life_cycle_bo_cd = life_cycle_bo_cd;
-            this.owner_flg = owner_flg;
-            this.parent_bo_cd = parent_bo_cd;
-            this.instance_ctrl_flg = instance_ctrl_flg;
-            this.version = version;
+            this.bus_obj_cd = odr.GetString(odr.GetOrdinal("BUS_OBJ_CD"));
+            this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
+            this.maint_obj_cd = odr.GetString(odr.GetOrdinal("MAINT_OBJ_CD"));
+            this.app_svc_id = odr.GetString(odr.GetOrdinal("APP_SVC_ID"));
+            this.life_cycle_bo_cd = odr.GetString(odr.GetOrdinal("LIFE_CYCLE_BO_CD"));
+            this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG"));
+            this.parent_bo_cd = odr.GetString(odr.GetOrdinal("PARENT_BO_CD"));
+            this.instance_ctrl_flg = odr.GetString(odr.GetOrdinal("INSTANCE_CTRL_FLG"));
+            this.rootSchema = "";
+            this.finalSchema = "";
         }
 
         public void setBus_obj_cd(string bus_obj_cd) { this.bus_obj_cd = bus_obj_cd; }
