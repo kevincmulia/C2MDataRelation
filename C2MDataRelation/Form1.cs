@@ -486,32 +486,14 @@ namespace C2MDataRelation
                         usageGroup ug = new usageGroup(usageRuleGroupName);
                         ug.UsageRuleList = getUsageRuleFromUsageGroup(usageRuleGroupName);
                         usageRulesLoaded = new Dictionary<string, UsageRule>();
+                        treeView1.Nodes.Clear();
+                        treeView1.Nodes.Add(new TreeNode(textBox1.Text));
                         foreach (UsageRule ur in ug.UsageRuleList)//to be used in another place
                         {
                             usageRulesLoaded.Add(ur.Name, ur);
+                            treeView1.Nodes[0].Nodes.Add(ur.Name);
                         }
                         richTextBox1.Text = ug.print();
-                    } 
-                    else if (comboBox1.Text.Equals("Usage Calculation Rule"))
-                    { //Usage Calculation Rule
-                        string usageRuleName = textBox1.Text;
-                        UsageRule usageRule;
-                        if (usageRulesLoaded.ContainsKey(usageRuleName))
-                        {
-                            usageRule = usageRulesLoaded[usageRuleName];
-                            displayTVandRTB(usageRule.Schema);
-                        }
-                        else {
-                            usageRule = getUsageRule(usageRuleName);
-                            string usageRuleGroupName = usageRule.UsageGroup;
-                            usageGroup ug = new usageGroup(usageRuleGroupName);
-                            usageRule.Schema = getFullSchema(usageRule.UsageRuleType);
-                            usageRule.combineSchemaAndBoDataArea();
-                            usageRule.getSq();
-                            //MessageBox.Show(usageRule.print());
-                            //displayTVandRTB(usageRule.Schema);
-                            richTextBox1.Text = usageRule.printSQ();
-                        }
                     }
                 }
                 else
@@ -616,7 +598,17 @@ namespace C2MDataRelation
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             richTextBox1.Clear();
-            richTextBox1.Text = e.Node.Text;
+            if (usageRulesLoaded.Count > 0&& comboBox1.Text.Equals("Usage Calculation Group")) {
+                if (usageRulesLoaded.ContainsKey(e.Node.Text))
+                {
+                    XmlDocument xmldoc = changeToXmldoc(usageRulesLoaded[e.Node.Text].Schema);
+                    printRTB(xmldoc);
+                }
+                else {
+                    richTextBox1.Text = "schema not found";
+                }
+                
+            }
 
         }
     }
