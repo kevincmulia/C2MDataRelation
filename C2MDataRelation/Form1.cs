@@ -22,9 +22,9 @@ namespace C2MDataRelation
     public partial class Form1 : Form
     {
         //GLOBAL VAR
-        OracleConnection conn;
+        private OracleConnection conn;
         Dictionary<String,UsageRule> usageRulesLoaded;
-        List<UsageRule> usageRulesLoaded;
+        //List<UsageRule> usageRulesLoaded;
         BusinessObject businessObject;
         BusinessService businessService;
         DataArea dataArea;
@@ -467,13 +467,14 @@ namespace C2MDataRelation
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (type == "Business Object")
-                    businessObject = new BusinessObject(orr);
+                    businessObject = new BusinessObject(orr, conn);
                 else if (type == "Business Service")
-                    businessService = new BusinessService(orr);
+                    businessService = new BusinessService(orr, conn);
                 else if (type == "Data Area")
-                    dataArea = new DataArea(orr);
+                    dataArea = new DataArea(orr, conn);
             }
         }
+
         private void button1_Click(object sender, EventArgs e)
         {
             //TREEVIEW LABEL
@@ -491,18 +492,50 @@ namespace C2MDataRelation
                         //}
                         try
                         {
+                            if(comboBox1.Text.Equals("Business Object"))
+                            {
+                                getInfo(textBox1.Text, "Business Object");
+                                MessageBox.Show(businessObject.getfinalSchema());
+
+                                XmlDocument xmldoc = changeToXmldoc(businessObject.getfinalSchema());
+
+                                //FILL TREEVIEW
+                                fillTV(xmldoc);
+
+                                //OVERALL SCHEMA
+                                printRTB(xmldoc);
+                                displayTVandRTB(businessObject.getfinalSchema());
+                            }else if(comboBox1.Text.Equals("Business Service"))
+                            {
+                                getInfo(textBox1.Text, "Business Service");
+                                MessageBox.Show(businessService.getfinalSchema());
+
+                                XmlDocument xmldoc = changeToXmldoc(businessService.getfinalSchema());
+
+                                //FILL TREEVIEW
+                                fillTV(xmldoc);
+
+                                //OVERALL SCHEMA
+                                printRTB(xmldoc);
+                                displayTVandRTB(businessService.getfinalSchema());
+                            }else if(comboBox1.Text.Equals("Data Area"))
+                            {
+                                getInfo(textBox1.Text, "Data Area");
+                                MessageBox.Show(dataArea.getfinalSchema());
+
+                                XmlDocument xmldoc = changeToXmldoc(dataArea.getfinalSchema());
+
+                                //FILL TREEVIEW
+                                fillTV(xmldoc);
+
+                                //OVERALL SCHEMA
+                                printRTB(xmldoc);
+                                displayTVandRTB(dataArea.getfinalSchema());
+                            }
+
                             //GET RESULT OF ALL SCHEMA
-                            string allSchema = getFullSchema(textBox1.Text);
-                            MessageBox.Show(allSchema);
-
-                            XmlDocument xmldoc = changeToXmldoc(allSchema);
-
-                            //FILL TREEVIEW
-                            //fillTV(xmldoc);
-
-                            //OVERALL SCHEMA
-                            //printRTB(xmldoc);
-                            displayTVandRTB(allSchema);
+                            //string allSchema = getFullSchema(textBox1.Text);
+                            //MessageBox.Show(allSchema);
                         }
                         catch (Exception err)
                         {

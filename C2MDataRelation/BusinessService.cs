@@ -1,9 +1,11 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace C2MDataRelation
 {
@@ -12,6 +14,7 @@ namespace C2MDataRelation
         private string bus_svc_cd, svc_name, owner_flg, app_svc_id;
         private string rootSchema, finalSchema;
         private int version;
+        OracleConnection conn;
 
         public BusinessService()
         {
@@ -22,15 +25,153 @@ namespace C2MDataRelation
             this.app_svc_id = null;
         }
 
-        public BusinessService(OracleDataReader odr)
+        public BusinessService(OracleDataReader odr, OracleConnection con)
         {
+            this.conn = con;
             this.bus_svc_cd = odr.GetString(odr.GetOrdinal("BUS_SVC_CD"));
             this.svc_name = odr.GetString(odr.GetOrdinal("SVC_NAME"));
             this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
             this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG"));
             this.app_svc_id = odr.GetString(odr.GetOrdinal("APP_SVC_ID"));
-            this.rootSchema = "";
-            this.finalSchema = "";
+            this.rootSchema = getSchema(odr.GetString(odr.GetOrdinal("BUS_SVC_CD")));
+            this.finalSchema = getFullSchema(odr.GetString(odr.GetOrdinal("BUS_SVC_CD")));
+        }
+
+        private string getFullSchema(string schemaName)
+        {
+            return "<" + schemaName + ">\n" + getSchemas(schemaName) + "</" + schemaName + ">";
+        }
+
+        private string getSchema(string schemaName)
+        {
+            string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + schemaName + "'";
+            OracleCommand orc = new OracleCommand(query, conn);
+            using (OracleDataReader orr = orc.ExecuteReader())
+            {
+                if (orr.HasRows)
+                {
+                    while (orr.Read())
+                    {
+                        return orr.GetString(0);
+                    }
+                }
+                else
+                {
+                    return ("Schema might not exist!");
+                }
+            }
+            return "error";
+        }
+
+        private string printCN(XmlNode parentNode)
+        {
+            string temp = "";
+            XmlNodeList nl = parentNode.ChildNodes;
+            for (int i = 0; i < nl.Count; i++)
+            {
+                XmlNode cN = parentNode.ChildNodes[i];
+                if (cN.NodeType == XmlNodeType.Element)
+                {
+                    if (cN.Name == "includeBO" || cN.Name == "includeDA" || cN.Name == "includeBS")
+                    {
+                        temp += getSchemas(cN.Attributes["name"].Value);
+                    }
+                    else if (cN.HasChildNodes)
+                    {
+                        XmlNodeList xnl = cN.ChildNodes;
+                        temp += "<" + cN.Name + ">\n";
+                        temp += printCN(cN);
+                        temp += "</" + cN.Name + ">\n";
+                    }
+                    else if (!cN.HasChildNodes)
+                    {
+                        if (cN.Name.ToLower().Contains("uihint"))
+                        {
+
+                        }
+                        else
+                        {
+                            temp += "<" + cN.Name;
+                            foreach (XmlAttribute att in cN.Attributes)
+                            {
+                                if (att.Name.ToLower().Contains("uihint"))
+                                {
+
+                                }
+                                else
+                                {
+                                    temp += " " + att.Name + "=\"" + att.Value + "\"";
+                                }
+                            }
+                            temp += "/>\n";
+                        }
+                        //temp += "<" + cN.Name + "/>\n";
+                    }
+                }
+            }
+            return temp;
+        }
+
+        private string getSchemas(string schemaName)
+        {
+            XmlNodeList cNode;
+            string temp = "";
+            string schema = @"" + getSchema(schemaName);
+            XmlDocument xd = new XmlDocument();
+            xd.LoadXml(schema);
+            XmlNode node = xd.DocumentElement;
+            if (node.HasChildNodes)
+            {
+                cNode = node.ChildNodes;
+                for (int i = 0; i < cNode.Count; i++)
+                {
+                    XmlNode xn = node.ChildNodes[i];
+                    if (xn.NodeType == XmlNodeType.Element)
+                    {
+                        if (xn.Name == "includeBO" || xn.Name == "includeDA" || xn.Name == "includeBS")
+                        {
+                            temp += getSchemas(xn.Attributes["name"].Value);
+                        }
+                        else
+                        {
+                            if (xn.HasChildNodes)
+                            {
+                                temp += "<" + xn.Name + ">\n";
+                                temp += printCN(xn);
+                                temp += "</" + xn.Name + ">\n";
+                            }
+                            else
+                            {
+                                if (xn.Name.ToLower().Contains("uihint"))
+                                {
+
+                                }
+                                else
+                                {
+                                    temp += "<" + xn.Name;
+                                    foreach (XmlAttribute att in xn.Attributes)
+                                    {
+                                        if (att.Name.ToLower().Contains("uihint"))
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            temp += " " + att.Name + "=\"" + att.Value + "\"";
+                                        }
+                                    }
+                                    temp += "/>\n";
+                                }
+                            }
+                        }
+                    }
+                    else if (xn.NodeType == XmlNodeType.EndElement)
+                    {
+                        temp += "</" + xn.Name + ">\n";
+                    }
+                }
+            }
+            return temp;
         }
 
         public void setBus_svc_cd(string bus_svc_cd) { this.bus_svc_cd = bus_svc_cd; }
@@ -47,5 +188,11 @@ namespace C2MDataRelation
 
         public void setapp_svc_id(string app_svc_id) { this.app_svc_id = app_svc_id; }
         public string getapp_svc_id() { return this.app_svc_id; }
+
+        public void setrootSchema(string rootSchema) { this.rootSchema = rootSchema; }
+        public string getrootSchema() { return this.rootSchema; }
+
+        public void setfinalSchema(string finalSchema) { this.finalSchema = finalSchema; }
+        public string getfinalSchema() { return this.finalSchema; }
     }
 }
