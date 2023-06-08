@@ -97,8 +97,8 @@ namespace C2MDataRelation
                             filterMap.Add(tempSQ, 1);
                         }
                     }
-                    
-                   
+
+
                 }
             }
             for (int i = 0; i < sqiList.Count; i++)
@@ -181,7 +181,7 @@ namespace C2MDataRelation
 
         }
         public void combineSchemaAndBoDataArea() {
-            String result="";
+            String result = "";
             if (this.schema != null && this.boDataArea != null)
             {
                 Dictionary<String, String> nodes = new Dictionary<string, string>();
@@ -190,9 +190,9 @@ namespace C2MDataRelation
                 xd.LoadXml(this.boDataArea);
                 XmlNode node = xd.DocumentElement;
 
-                XmlNode xn= node.ChildNodes[0];//initializing only
+                XmlNode xn = node.ChildNodes[0];//initializing only
 
-                XmlNodeList cNode=node.ChildNodes;
+                XmlNodeList cNode = node.ChildNodes;
                 for (int i = 0; i < cNode.Count; i++) {
                     xn = node.ChildNodes[i];
                     if (xn.NodeType == XmlNodeType.Element) {
@@ -213,28 +213,60 @@ namespace C2MDataRelation
                         }
                     }
                 }
-                this.schema= xd.OuterXml;
+                this.schema = xd.OuterXml;
                 //asdasd
             }
         }
         public string print() {
-            String result ="";
+            String result = "";
             foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(this))
             {
                 string name = descriptor.Name;
                 object value = descriptor.GetValue(this);
-                result += String.Format("{0}={1}", name, value) +"\n\n\n";
+                result += String.Format("{0}={1}", name, value) + "\n\n\n";
             }
             return result;
         }
         public string printSQ()
         {
-            String result="";
+            String result = "";
             foreach (sq SQ in this.sqList) {
                 result += SQ.print() + "\n";
             }
             return result;
         }
-        
+
+        public override bool Equals(object obj)
+        {
+            return obj is UsageRule rule &&
+                   usageGroup == rule.usageGroup &&
+                   name == rule.name &&
+                   sequence == rule.sequence &&
+                   referredUsageGroup == rule.referredUsageGroup &&
+                   usageRuleType == rule.usageRuleType &&
+                   boDataArea == rule.boDataArea;
+        }
+        public bool sqListEquals(UsageRule rule)
+        {
+            if (this.SqList.Count>0 && rule.SqList.Count>0) {
+                var firstNotSecond = this.SqList.Except(rule.SqList).ToList();
+                var secondNotFirst = rule.SqList.Except(this.SqList).ToList();
+                return !firstNotSecond.Any() && !secondNotFirst.Any();
+            }
+            return false;
+            
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -928505604;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(usageGroup);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(name);
+            hashCode = hashCode * -1521134295 + sequence.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(referredUsageGroup);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(usageRuleType);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(boDataArea);
+            return hashCode;
+        }
     }
 }

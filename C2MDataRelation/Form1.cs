@@ -23,6 +23,7 @@ namespace C2MDataRelation
     {
         //GLOBAL VAR
         OracleConnection conn;
+        Dictionary<String,UsageRule> usageRulesLoaded;
         List<UsageRule> usageRulesLoaded;
         BusinessObject businessObject;
         BusinessService businessService;
@@ -193,7 +194,9 @@ namespace C2MDataRelation
         /**
         * return list of usage group that is affected by the usage rule name whether its called by other usage rule and its own usage group
         * **/
-        private List<usageGroup> findUsageGroupAffected(string usageRuleName) { 
+        private List<usageGroup> findUsageGroupAffected(string usageRuleName) {
+            //select usg_grp_cd from D1_USG_RULE where usg_rule_cd ='KM-DSC';
+            //select usg_grp_cd from D1_USG_RULE where referred_usg_grp_cd in (select usg_grp_cd from D1_USG_RULE where usg_rule_cd = 'KM-DSC');
             string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_rule_cd = '"+usageRuleName+"' or referred_usg_grp_cd = '"+usageRuleName+"'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
@@ -512,35 +515,15 @@ namespace C2MDataRelation
                         string usageRuleGroupName = textBox1.Text;
                         usageGroup ug = new usageGroup(usageRuleGroupName);
                         ug.UsageRuleList = getUsageRuleFromUsageGroup(usageRuleGroupName);
-                        usageRulesLoaded = new List<UsageRule>();
-                        usageRulesLoaded = ug.UsageRuleList;//to be used in another place
+                        usageRulesLoaded = new Dictionary<string, UsageRule>();
+                        treeView1.Nodes.Clear();
+                        treeView1.Nodes.Add(new TreeNode(textBox1.Text));
+                        foreach (UsageRule ur in ug.UsageRuleList)//to be used in another place
+                        {
+                            usageRulesLoaded.Add(ur.Name, ur);
+                            treeView1.Nodes[0].Nodes.Add(ur.Name);
+                        }
                         richTextBox1.Text = ug.print();
-                    } 
-                    else if (comboBox1.Text.Equals("Usage Calculation Rule"))
-                    { //Usage Calculation Rule
-                        string usageRuleName = textBox1.Text;
-                        bool found = false;
-                        UsageRule usageRule;
-                        foreach (UsageRule ur in usageRulesLoaded) {
-                            if (ur.Name.Equals(usageRuleName))
-                            {
-                                found = true;
-                                usageRule = ur;
-                                displayTVandRTB(ur.Schema);
-
-                            }
-                        }
-                        if (!found) {
-                            usageRule = getUsageRule(usageRuleName);
-                            string usageRuleGroupName = usageRule.UsageGroup;
-                            usageGroup ug = new usageGroup(usageRuleGroupName);
-                            usageRule.Schema = getFullSchema(usageRule.UsageRuleType);
-                            usageRule.combineSchemaAndBoDataArea();
-                            usageRule.getSq();
-                            //MessageBox.Show(usageRule.print());
-                            //displayTVandRTB(usageRule.Schema);
-                            richTextBox1.Text = usageRule.printSQ();
-                        }
                     }
                 }
                 else
@@ -599,8 +582,26 @@ namespace C2MDataRelation
                             MessageBox.Show(err.Message);
                         }
                     }
-                    else if (comboBox1.Text.Equals("Usage Calculation Rule")) { 
+                    else if (comboBox1.Text.Equals("Usage Calculation Rule")) {
+                        string usageRuleName = textBox1.Text;
                         
+                        UsageRule usageRule;
+                        String result = "";
+                        if (usageRulesLoaded.ContainsKey(usageRuleName))
+                        {
+                            usageRule = usageRulesLoaded[usageRuleName];
+                            foreach (KeyValuePair<string, UsageRule> entry in usageRulesLoaded)
+                            {
+                                //entry.Value or entry.Key
+                                if (!entry.Key.Equals(usageRule.Name) && entry.Value.sqListEquals(usageRule)) {
+                                    result += entry.Value.Name + "\n";
+                                }
+                            }
+                        }
+                        else { 
+
+                        }
+
                     }
                 }
                 else
@@ -627,7 +628,17 @@ namespace C2MDataRelation
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             richTextBox1.Clear();
-            richTextBox1.Text = e.Node.Text;
+            if (usageRulesLoaded.Count > 0&& comboBox1.Text.Equals("Usage Calculation Group")) {
+                if (usageRulesLoaded.ContainsKey(e.Node.Text))
+                {
+                    XmlDocument xmldoc = changeToXmldoc(usageRulesLoaded[e.Node.Text].Schema);
+                    printRTB(xmldoc);
+                }
+                else {
+                    richTextBox1.Text = "schema not found";
+                }
+                
+            }
 
         }
     }
