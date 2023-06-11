@@ -217,31 +217,6 @@ namespace C2MDataRelation
             //if arraylist.size = 0 then its not included in other schema
             return result;
         }
-        /**
-         * return usage rule given arraylist of usage rule name
-         * **/
-        private List<UsageRule> getUsageRule(List<String> usageRuleList)
-        {
-            string query = "SElect * from D1_USG_RULE where";
-            foreach (string usageRuleName in usageRuleList) { 
-                   query = query+" usg_rule_cd ='"+usageRuleName+"' or";
-            }
-            query = query.Substring(0,query.Length-3);
-            //MessageBox.Show(query);
-            OracleCommand orc = new OracleCommand(query, conn);
-            List<UsageRule> result =new List<UsageRule>();
-            using (OracleDataReader orr = orc.ExecuteReader())
-            {
-                if (orr.HasRows)
-                {
-                    while (orr.Read())
-                    {
-                        result.Add(new UsageRule(orr));
-                    }
-                }
-            }
-            return result;
-        }
         //get usage rule basedo n the name
         private UsageRule getUsageRule(string usageRuleName)
         {
@@ -287,27 +262,6 @@ namespace C2MDataRelation
                     }
                 }
             }
-            return result;
-        }
-        /**
-         * return list of usage rules that has the same group as the given usage rule
-         * **/
-        private List<UsageRule> findUsageRulesInTheSameGroup(string usageRuleName) { 
-            string query = "select * from D1_USG_RULE where usg_grp_cd in (select usg_grp_cd from d1_usg_rule where usg_rule_cd ='"+usageRuleName+"'";
-            //MessageBox.Show(query);
-            OracleCommand orc = new OracleCommand(query, conn);
-            List<UsageRule> result = new List<UsageRule>();
-            using (OracleDataReader orr = orc.ExecuteReader())
-            {
-                if (orr.HasRows)
-                {
-                    while (orr.Read())
-                    {
-                        result.Add(new UsageRule(orr));
-                    }
-                }
-            }
-            //if arraylist.size = 0 then its not included in other schema
             return result;
         }
         /**
@@ -469,12 +423,19 @@ namespace C2MDataRelation
             OracleCommand orc = new OracleCommand(queries, conn);
             using (OracleDataReader orr = orc.ExecuteReader())
             {
-                if (type == "Business Object")
-                    businessObject = new BusinessObject(orr, conn);
-                else if (type == "Business Service")
-                    businessService = new BusinessService(orr, conn);
-                else if (type == "Data Area")
-                    dataArea = new DataArea(orr, conn);
+                if (orr.HasRows)
+                {
+                    while (orr.Read())
+                    {
+                        if (type == "Business Object")
+                            businessObject = new BusinessObject(orr, conn);
+                        else if (type == "Business Service")
+                            businessService = new BusinessService(orr, conn);
+                        else if (type == "Data Area")
+                            dataArea = new DataArea(orr, conn);
+                    }
+                }
+                
             }
         }
 
@@ -497,42 +458,15 @@ namespace C2MDataRelation
                         {
                             if(comboBox1.Text.Equals("Business Object"))
                             {
-                                getInfo(textBox1.Text, "Business Object");
-                                MessageBox.Show(businessObject.getfinalSchema());
-
-                                XmlDocument xmldoc = changeToXmldoc(businessObject.getfinalSchema());
-
-                                //FILL TREEVIEW
-                                fillTV(xmldoc);
-
-                                //OVERALL SCHEMA
-                                printRTB(xmldoc);
+                                getInfo(textBox1.Text, comboBox1.Text);
                                 displayTVandRTB(businessObject.getfinalSchema());
                             }else if(comboBox1.Text.Equals("Business Service"))
                             {
                                 getInfo(textBox1.Text, "Business Service");
-                                MessageBox.Show(businessService.getfinalSchema());
-
-                                XmlDocument xmldoc = changeToXmldoc(businessService.getfinalSchema());
-
-                                //FILL TREEVIEW
-                                fillTV(xmldoc);
-
-                                //OVERALL SCHEMA
-                                printRTB(xmldoc);
                                 displayTVandRTB(businessService.getfinalSchema());
                             }else if(comboBox1.Text.Equals("Data Area"))
                             {
                                 getInfo(textBox1.Text, "Data Area");
-                                MessageBox.Show(dataArea.getfinalSchema());
-
-                                XmlDocument xmldoc = changeToXmldoc(dataArea.getfinalSchema());
-
-                                //FILL TREEVIEW
-                                fillTV(xmldoc);
-
-                                //OVERALL SCHEMA
-                                printRTB(xmldoc);
                                 displayTVandRTB(dataArea.getfinalSchema());
                             }
 
@@ -663,8 +597,9 @@ namespace C2MDataRelation
         }
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            richTextBox1.Clear();
-            if (usageRulesLoaded.Count > 0&& comboBox1.Text.Equals("Usage Calculation Group")) {
+            if (comboBox1.Text.Equals("Usage Calculation Group")&&usageRulesLoaded!=null)
+            {
+                richTextBox1.Clear();
                 if (usageRulesLoaded.ContainsKey(e.Node.Text))
                 {
                     XmlDocument xmldoc = changeToXmldoc(usageRulesLoaded[e.Node.Text].Schema);

@@ -14,7 +14,7 @@ namespace C2MDataRelation
         private string bus_obj_cd, maint_obj_cd, app_svc_id, life_cycle_bo_cd, owner_flg, parent_bo_cd, instance_ctrl_flg;
         private string rootSchema, finalSchema;
         private int version;
-        OracleConnection conn;
+        
 
         public BusinessObject()
         {
@@ -32,7 +32,6 @@ namespace C2MDataRelation
 
         public BusinessObject(OracleDataReader odr, OracleConnection con)
         {
-            this.conn = con;
             this.bus_obj_cd = odr.GetString(odr.GetOrdinal("BUS_OBJ_CD"));
             this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
             this.maint_obj_cd = odr.GetString(odr.GetOrdinal("MAINT_OBJ_CD"));
@@ -41,16 +40,16 @@ namespace C2MDataRelation
             this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG"));
             this.parent_bo_cd = odr.GetString(odr.GetOrdinal("PARENT_BO_CD"));
             this.instance_ctrl_flg = odr.GetString(odr.GetOrdinal("INSTANCE_CTRL_FLG"));
-            this.rootSchema = getSchema(odr.GetString(odr.GetOrdinal("BUS_OBJ_CD")));
-            this.finalSchema = getFullSchema(odr.GetString(odr.GetOrdinal("BUS_OBJ_CD")));
+            this.rootSchema = getSchema(odr.GetString(odr.GetOrdinal("BUS_OBJ_CD")),con);
+            this.finalSchema = getFullSchema(odr.GetString(odr.GetOrdinal("BUS_OBJ_CD")),con);
         }
 
-        private string getFullSchema(string schemaName)
+        private string getFullSchema(string schemaName, OracleConnection conn)
         {
-            return "<" + schemaName + ">\n" + getSchemas(schemaName) + "</" + schemaName + ">";
+            return "<" + schemaName + ">\n" + getSchemas(schemaName, conn) + "</" + schemaName + ">";
         }
 
-        private string getSchema(string schemaName)
+        private string getSchema(string schemaName,OracleConnection conn)
         {
             string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + schemaName + "'";
             OracleCommand orc = new OracleCommand(query, conn);
@@ -71,7 +70,7 @@ namespace C2MDataRelation
             return "error";
         }
 
-        private string printCN(XmlNode parentNode)
+        private string printCN(XmlNode parentNode,OracleConnection conn)
         {
             string temp = "";
             XmlNodeList nl = parentNode.ChildNodes;
@@ -82,13 +81,13 @@ namespace C2MDataRelation
                 {
                     if (cN.Name == "includeBO" || cN.Name == "includeDA" || cN.Name == "includeBS")
                     {
-                        temp += getSchemas(cN.Attributes["name"].Value);
+                        temp += getSchemas(cN.Attributes["name"].Value, conn);
                     }
                     else if (cN.HasChildNodes)
                     {
                         XmlNodeList xnl = cN.ChildNodes;
                         temp += "<" + cN.Name + ">\n";
-                        temp += printCN(cN);
+                        temp += printCN(cN, conn);
                         temp += "</" + cN.Name + ">\n";
                     }
                     else if (!cN.HasChildNodes)
@@ -120,11 +119,11 @@ namespace C2MDataRelation
             return temp;
         }
 
-        private string getSchemas(string schemaName)
+        private string getSchemas(string schemaName, OracleConnection conn)
         {
             XmlNodeList cNode;
             string temp = "";
-            string schema = @"" + getSchema(schemaName);
+            string schema = @"" + getSchema(schemaName, conn);
             XmlDocument xd = new XmlDocument();
             xd.LoadXml(schema);
             XmlNode node = xd.DocumentElement;
@@ -138,14 +137,14 @@ namespace C2MDataRelation
                     {
                         if (xn.Name == "includeBO" || xn.Name == "includeDA" || xn.Name == "includeBS")
                         {
-                            temp += getSchemas(xn.Attributes["name"].Value);
+                            temp += getSchemas(xn.Attributes["name"].Value, conn);
                         }
                         else
                         {
                             if (xn.HasChildNodes)
                             {
                                 temp += "<" + xn.Name + ">\n";
-                                temp += printCN(xn);
+                                temp += printCN(xn, conn);
                                 temp += "</" + xn.Name + ">\n";
                             }
                             else
