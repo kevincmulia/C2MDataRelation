@@ -24,6 +24,10 @@ namespace C2MDataRelation
         //GLOBAL VAR
         private OracleConnection conn;
         Dictionary<String,UsageRule> usageRulesLoaded;
+        List<BusinessObject> businessObjects;
+        List<BusinessService> businessServices;
+        List<DataArea> dataAreas;
+
         BusinessObject businessObject;
         BusinessService businessService;
         DataArea dataArea;
