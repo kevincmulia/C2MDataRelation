@@ -1,5 +1,6 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
@@ -13,6 +14,7 @@ namespace C2MDataRelation
     {
         private string bus_obj_cd, maint_obj_cd, app_svc_id, life_cycle_bo_cd, owner_flg, parent_bo_cd, instance_ctrl_flg;
         private string rootSchema, finalSchema;
+        private ArrayList arrIncluded, arrIncluding;
         private int version;
         
 
@@ -30,7 +32,7 @@ namespace C2MDataRelation
             this.finalSchema = null;
         }
 
-        public BusinessObject(OracleDataReader odr, OracleConnection con)
+        public BusinessObject(OracleDataReader odr, OracleConnection con, string root, string final)
         {
             this.bus_obj_cd = odr.GetString(odr.GetOrdinal("BUS_OBJ_CD"));
             this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
@@ -40,145 +42,8 @@ namespace C2MDataRelation
             this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG"));
             this.parent_bo_cd = odr.GetString(odr.GetOrdinal("PARENT_BO_CD"));
             this.instance_ctrl_flg = odr.GetString(odr.GetOrdinal("INSTANCE_CTRL_FLG"));
-            this.rootSchema = getSchema(odr.GetString(odr.GetOrdinal("BUS_OBJ_CD")),con);
-            this.finalSchema = getFullSchema(odr.GetString(odr.GetOrdinal("BUS_OBJ_CD")),con);
-        }
-
-        private string getFullSchema(string schemaName, OracleConnection conn)
-        {
-            return "<" + schemaName + ">\n" + getSchemas(schemaName, conn) + "</" + schemaName + ">";
-        }
-
-        private string getSchema(string schemaName,OracleConnection conn)
-        {
-            string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + schemaName + "'";
-            OracleCommand orc = new OracleCommand(query, conn);
-            using (OracleDataReader orr = orc.ExecuteReader())
-            {
-                if (orr.HasRows)
-                {
-                    while (orr.Read())
-                    {
-                        return orr.GetString(0);
-                    }
-                }
-                else
-                {
-                    return ("Schema might not exist!");
-                }
-            }
-            return "error";
-        }
-
-        private string printCN(XmlNode parentNode,OracleConnection conn)
-        {
-            string temp = "";
-            XmlNodeList nl = parentNode.ChildNodes;
-            for (int i = 0; i < nl.Count; i++)
-            {
-                XmlNode cN = parentNode.ChildNodes[i];
-                if (cN.NodeType == XmlNodeType.Element)
-                {
-                    if (cN.Name == "includeBO" || cN.Name == "includeDA" || cN.Name == "includeBS")
-                    {
-                        temp += getSchemas(cN.Attributes["name"].Value, conn);
-                    }
-                    else if (cN.HasChildNodes)
-                    {
-                        XmlNodeList xnl = cN.ChildNodes;
-                        temp += "<" + cN.Name + ">\n";
-                        temp += printCN(cN, conn);
-                        temp += "</" + cN.Name + ">\n";
-                    }
-                    else if (!cN.HasChildNodes)
-                    {
-                        if (cN.Name.ToLower().Contains("uihint"))
-                        {
-
-                        }
-                        else
-                        {
-                            temp += "<" + cN.Name;
-                            foreach (XmlAttribute att in cN.Attributes)
-                            {
-                                if (att.Name.ToLower().Contains("uihint"))
-                                {
-
-                                }
-                                else
-                                {
-                                    temp += " " + att.Name + "=\"" + att.Value + "\"";
-                                }
-                            }
-                            temp += "/>\n";
-                        }
-                        //temp += "<" + cN.Name + "/>\n";
-                    }
-                }
-            }
-            return temp;
-        }
-
-        private string getSchemas(string schemaName, OracleConnection conn)
-        {
-            XmlNodeList cNode;
-            string temp = "";
-            string schema = @"" + getSchema(schemaName, conn);
-            XmlDocument xd = new XmlDocument();
-            xd.LoadXml(schema);
-            XmlNode node = xd.DocumentElement;
-            if (node.HasChildNodes)
-            {
-                cNode = node.ChildNodes;
-                for (int i = 0; i < cNode.Count; i++)
-                {
-                    XmlNode xn = node.ChildNodes[i];
-                    if (xn.NodeType == XmlNodeType.Element)
-                    {
-                        if (xn.Name == "includeBO" || xn.Name == "includeDA" || xn.Name == "includeBS")
-                        {
-                            temp += getSchemas(xn.Attributes["name"].Value, conn);
-                        }
-                        else
-                        {
-                            if (xn.HasChildNodes)
-                            {
-                                temp += "<" + xn.Name + ">\n";
-                                temp += printCN(xn, conn);
-                                temp += "</" + xn.Name + ">\n";
-                            }
-                            else
-                            {
-                                if (xn.Name.ToLower().Contains("uihint"))
-                                {
-
-                                }
-                                else
-                                {
-                                    temp += "<" + xn.Name;
-                                    foreach (XmlAttribute att in xn.Attributes)
-                                    {
-                                        if (att.Name.ToLower().Contains("uihint"))
-                                        {
-
-                                        }
-                                        else
-                                        {
-                                            temp += " " + att.Name + "=\"" + att.Value + "\"";
-                                        }
-                                    }
-                                    temp += "/>\n";
-                                }
-                            }
-                        }
-                    }
-                    else if (xn.NodeType == XmlNodeType.EndElement)
-                    {
-                        temp += "</" + xn.Name + ">\n";
-                    }
-                }
-            }
-            return temp;
+            this.rootSchema = root;
+            this.finalSchema = final;
         }
 
         public void setBus_obj_cd(string bus_obj_cd) { this.bus_obj_cd = bus_obj_cd; }
@@ -210,6 +75,36 @@ namespace C2MDataRelation
 
         public void setfinalSchema(string finalSchema) { this.finalSchema = finalSchema; }
         public string getfinalSchema() { return this.finalSchema; }
+
+        public void setIncluded(ArrayList arr)
+        {
+            arrIncluded = arr;
+        }
+
+        public string getIncluded()
+        {
+            string result = "";
+            for (int i = 0; i < arrIncluded.Count; i++)
+            {
+                result += arrIncluded[i] + "\n";
+            }
+            return result;
+        }
+
+        public void setIncluding(ArrayList arr)
+        {
+            arrIncluding = arr;
+        }
+
+        public string getIncluding()
+        {
+            string result = "";
+            for (int i = 0; i < arrIncluding.Count; i++)
+            {
+                result += arrIncluding[i] + "\n";
+            }
+            return result;
+        }
 
         public string ToString => "Business Object : " + bus_obj_cd + "\nVersion : " + version + "\nMaintanance Object Inherited : " + maint_obj_cd
             + "\nApplication Service : " + app_svc_id + "\nLife Cycle : " + life_cycle_bo_cd + "\nOwner Flag : " + owner_flg + "\nParent BO : " +

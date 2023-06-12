@@ -24,13 +24,10 @@ namespace C2MDataRelation
         //GLOBAL VAR
         private OracleConnection conn;
         Dictionary<String,UsageRule> usageRulesLoaded;
-        List<BusinessObject> businessObjects;
-        List<BusinessService> businessServices;
-        List<DataArea> dataAreas;
-
-        BusinessObject businessObject;
-        BusinessService businessService;
-        DataArea dataArea;
+        List<BusinessObject> businessObjects = new List<BusinessObject>();
+        List<BusinessService> businessServices = new List<BusinessService>();
+        List<DataArea> dataAreas = new List<DataArea>();
+        ArrayList arr = new ArrayList();
 
         public void connToDB()
         {
@@ -305,6 +302,7 @@ namespace C2MDataRelation
                     {
                         if (xn.Name == "includeBO" || xn.Name == "includeDA" || xn.Name == "includeBS")
                         {
+                            arr.Add(xn.Attributes["name"].Value);
                             temp += getSchemas(xn.Attributes["name"].Value);
                         }
                         else
@@ -428,11 +426,16 @@ namespace C2MDataRelation
                     while (orr.Read())
                     {
                         if (type == "Business Object")
-                            businessObject = new BusinessObject(orr, conn);
+                        {
+                            businessObjects.Add(new BusinessObject(orr, conn, getSchema(name), getFullSchema(name)));
+                        }
                         else if (type == "Business Service")
-                            businessService = new BusinessService(orr, conn);
-                        else if (type == "Data Area")
-                            dataArea = new DataArea(orr, conn);
+                        {
+                            businessServices.Add(new BusinessService(orr, conn, getSchema(name), getFullSchema(name)));
+                        }else if (type == "Data Area")
+                        {
+                            dataAreas.Add(new DataArea(orr, conn, getSchema(name), getFullSchema(name)));
+                        }
                     }
                 }
                 
@@ -459,15 +462,15 @@ namespace C2MDataRelation
                             if(comboBox1.Text.Equals("Business Object"))
                             {
                                 getInfo(textBox1.Text, comboBox1.Text);
-                                displayTVandRTB(businessObject.getfinalSchema());
+                                displayTVandRTB(businessObjects[businessObjects.Count-1].getfinalSchema());
                             }else if(comboBox1.Text.Equals("Business Service"))
                             {
                                 getInfo(textBox1.Text, "Business Service");
-                                displayTVandRTB(businessService.getfinalSchema());
+                                displayTVandRTB(businessServices[businessServices.Count-1].getfinalSchema());
                             }else if(comboBox1.Text.Equals("Data Area"))
                             {
                                 getInfo(textBox1.Text, "Data Area");
-                                displayTVandRTB(dataArea.getfinalSchema());
+                                displayTVandRTB(dataAreas[dataAreas.Count-1].getfinalSchema());
                             }
 
                             //GET RESULT OF ALL SCHEMA
@@ -534,18 +537,27 @@ namespace C2MDataRelation
                         {
                             //QUERY BO SCHEMA
                             richTextBox1.Clear();
-                            ArrayList arr = findSchemaAffected(textBox1.Text);
-                            if (arr.Count == 0)
+                            if (comboBox1.Text.Equals("Business Object"))
                             {
-                                MessageBox.Show("Schema is not reference in other schema");
+                                richTextBox1.AppendText("Mention By:\n");
+                                businessObjects[businessObjects.Count - 1].setIncluded(findSchemaAffected(textBox1.Text));
+                                richTextBox1.AppendText(businessObjects[businessObjects.Count - 1].getIncluded());
+                                richTextBox1.AppendText("Mentioning:\n");
+                                businessObjects[businessObjects.Count - 1].setIncluding(arr);
+                                richTextBox1.AppendText(businessObjects[businessObjects.Count - 1].getIncluding());
                             }
-                            else
-                            {
-                                foreach (string schema in arr)
-                                {
-                                    richTextBox1.AppendText(schema + "\n");
-                                }
-                            }
+                            //ArrayList arr = findSchemaAffected(textBox1.Text);
+                            //if (arr.Count == 0)
+                            //{
+                            //    MessageBox.Show("Schema is not reference in other schema");
+                            //}
+                            //else
+                            //{
+                            //    foreach (string schema in arr)
+                            //    {
+                            //        richTextBox1.AppendText(schema + "\n");
+                            //    }
+                            //}
                         }
                         catch (Exception err)
                         {
