@@ -495,6 +495,7 @@ namespace C2MDataRelation
                         {
                             usageRulesLoaded.Add(ur.Name, ur);
                             treeView1.Nodes[0].Nodes.Add(ur.Name);
+                            ur.addEligibilityCriteria
                         }
                         richTextBox1.Text = ug.print();
                     }
@@ -569,7 +570,7 @@ namespace C2MDataRelation
                         
                         UsageRule usageRule;
                         String result = "";
-                        if (usageRulesLoaded.ContainsKey(text))
+                        if (usageRulesLoaded.ContainsKey(text))//calc rulle
                         {
                             usageRule = usageRulesLoaded[text];
                             foreach (KeyValuePair<string, UsageRule> entry in usageRulesLoaded)
@@ -580,7 +581,7 @@ namespace C2MDataRelation
                                 }
                             }
                         }
-                        else {
+                        else {//calc group
                             List<String> usageGrpAffected = findUsageGroupAffected(text);
                             foreach (String entry in usageGrpAffected)
                             {
