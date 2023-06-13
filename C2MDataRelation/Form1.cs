@@ -192,22 +192,22 @@ namespace C2MDataRelation
             return result;
         }
         /**
-        * return list of usage group that is affected by the usage rule name whether its called by other usage rule and its own usage group
+        * return list of usage group that is affected the usage group and the groups that has a rule calling to the usage group
         * **/
-        private List<usageGroup> findUsageGroupAffected(string usageRuleName) {
+        private List<String> findUsageGroupAffected(string usageGroup) {
             //select usg_grp_cd from D1_USG_RULE where usg_rule_cd ='KM-DSC';
             //select usg_grp_cd from D1_USG_RULE where referred_usg_grp_cd in (select usg_grp_cd from D1_USG_RULE where usg_rule_cd = 'KM-DSC');
-            string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_rule_cd = '"+usageRuleName+"' or referred_usg_grp_cd = '"+usageRuleName+"'";
+            string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_grp_cd = '" + usageGroup + "' or referred_usg_grp_cd = '"+ usageGroup + "'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            List<usageGroup> result = new List<usageGroup>();
+            List<String> result = new List<String>();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                        result.Add(new usageGroup(orr.GetString(0)));
+                        result.Add(orr.GetString(orr.GetOrdinal("USG_GRP_CD")));
                     }
                 }
             }
@@ -564,14 +564,14 @@ namespace C2MDataRelation
                             MessageBox.Show(err.Message);
                         }
                     }
-                    else if (comboBox1.Text.Equals("Usage Calculation Rule")) {
-                        string usageRuleName = textBox1.Text;
+                    else if (comboBox1.Text.Equals("Usage Calculation Group")) {
+                        string text = textBox1.Text;
                         
                         UsageRule usageRule;
                         String result = "";
-                        if (usageRulesLoaded.ContainsKey(usageRuleName))
+                        if (usageRulesLoaded.ContainsKey(text))
                         {
-                            usageRule = usageRulesLoaded[usageRuleName];
+                            usageRule = usageRulesLoaded[text];
                             foreach (KeyValuePair<string, UsageRule> entry in usageRulesLoaded)
                             {
                                 //entry.Value or entry.Key
@@ -580,10 +580,15 @@ namespace C2MDataRelation
                                 }
                             }
                         }
-                        else { 
-
+                        else {
+                            List<String> usageGrpAffected = findUsageGroupAffected(text);
+                            foreach (String entry in usageGrpAffected)
+                            {
+                                result += "\n" + entry;
+                            }
                         }
-
+                        richTextBox1.Clear();
+                        richTextBox1.Text = result;
                     }
                 }
                 else
@@ -609,6 +614,7 @@ namespace C2MDataRelation
         }
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
+            textBox1.Text = e.Node.Text;
             if (comboBox1.Text.Equals("Usage Calculation Group")&&usageRulesLoaded!=null)
             {
                 richTextBox1.Clear();
