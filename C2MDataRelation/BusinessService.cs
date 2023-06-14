@@ -1,5 +1,6 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace C2MDataRelation
     {
         private string bus_svc_cd, svc_name, owner_flg, app_svc_id;
         private string rootSchema, finalSchema;
+        private ArrayList arrIncluded, arrIncluding;
         private int version;
         OracleConnection conn;
 
@@ -56,5 +58,35 @@ namespace C2MDataRelation
 
         public void setfinalSchema(string finalSchema) { this.finalSchema = finalSchema; }
         public string getfinalSchema() { return this.finalSchema; }
+
+        public void setIncluded(ArrayList arr)
+        {
+            arrIncluded = arr;
+        }
+
+        public string getIncluded()
+        {
+            string result = "";
+            for (int i = 0; i < arrIncluded.Count; i++)
+            {
+                result += arrIncluded[i] + "\n";
+            }
+            return result;
+        }
+
+        public void setIncluding(ArrayList arr)
+        {
+            arrIncluding = arr;
+        }
+
+        public string getIncluding()
+        {
+            string result = "";
+            for (int i = 0; i < arrIncluding.Count; i++)
+            {
+                result += arrIncluding[i] + "\n";
+            }
+            return result;
+        }
     }
 }

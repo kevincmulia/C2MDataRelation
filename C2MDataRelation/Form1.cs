@@ -545,6 +545,23 @@ namespace C2MDataRelation
                                 richTextBox1.AppendText("Mentioning:\n");
                                 businessObjects[businessObjects.Count - 1].setIncluding(arr);
                                 richTextBox1.AppendText(businessObjects[businessObjects.Count - 1].getIncluding());
+                            }else if (comboBox1.Text.Equals("Business Service"))
+                            {
+                                richTextBox1.AppendText("Mention By:\n");
+                                businessServices[businessServices.Count - 1].setIncluded(findSchemaAffected(textBox1.Text));
+                                richTextBox1.AppendText(businessServices[businessServices.Count - 1].getIncluded());
+                                richTextBox1.AppendText("Mentioning:\n");
+                                businessServices[businessServices.Count - 1].setIncluding(arr);
+                                richTextBox1.AppendText(businessServices[businessServices.Count - 1].getIncluding());
+                            }
+                            else if (comboBox1.Text.Equals("Data Area"))
+                            {
+                                richTextBox1.AppendText("Mention By:\n");
+                                dataAreas[dataAreas.Count - 1].setIncluded(findSchemaAffected(textBox1.Text));
+                                richTextBox1.AppendText(dataAreas[dataAreas.Count - 1].getIncluded());
+                                richTextBox1.AppendText("Mentioning:\n");
+                                dataAreas[dataAreas.Count - 1].setIncluding(arr);
+                                richTextBox1.AppendText(dataAreas[dataAreas.Count - 1].getIncluding());
                             }
                             //ArrayList arr = findSchemaAffected(textBox1.Text);
                             //if (arr.Count == 0)
