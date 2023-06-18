@@ -12,10 +12,8 @@ namespace C2MDataRelation
     class DataArea
     {
         private string data_area_cd, owner_flg, f1_ext_data_area_cd;
-        private string rootSchema, finalSchema;
-        private ArrayList arrIncluded, arrIncluding;
+        private string rootSchema, finalSchema, including, included;
         private int version;
-        OracleConnection conn;
 
         public DataArea()
         {
@@ -25,12 +23,14 @@ namespace C2MDataRelation
             this.f1_ext_data_area_cd=null;
         }
 
-        public DataArea(OracleDataReader odr, OracleConnection con, string root, string final)
+        public DataArea(OracleDataReader odr, OracleConnection con, string included, string including, string root, string final)
         {
-            this.data_area_cd = odr.GetString(odr.GetOrdinal("DATA_AREA_CD"));
+            this.data_area_cd = odr.GetString(odr.GetOrdinal("DATA_AREA_CD")).Trim();
             this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
-            this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG"));
-            this.f1_ext_data_area_cd = odr.GetString(odr.GetOrdinal("f1_ext_data_area_cd"));
+            this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG")).Trim();
+            this.f1_ext_data_area_cd = odr.GetString(odr.GetOrdinal("f1_ext_data_area_cd")).Trim();
+            this.included = included;
+            this.including = including;
             this.rootSchema = root;
             this.finalSchema = final;
         }
@@ -53,34 +53,24 @@ namespace C2MDataRelation
         public void setfinalSchema(string finalSchema) { this.finalSchema = finalSchema; }
         public string getfinalSchema() { return this.finalSchema; }
 
-        public void setIncluded(ArrayList arr)
+        public void setIncluded(string included)
         {
-            arrIncluded = arr;
+            this.included = included;
         }
 
         public string getIncluded()
         {
-            string result = "";
-            for (int i = 0; i < arrIncluded.Count; i++)
-            {
-                result += arrIncluded[i] + "\n";
-            }
-            return result;
+            return included;
         }
 
-        public void setIncluding(ArrayList arr)
+        public void setIncluding(string including)
         {
-            arrIncluding = arr;
+            this.including = including;
         }
 
         public string getIncluding()
         {
-            string result = "";
-            for (int i = 0; i < arrIncluding.Count; i++)
-            {
-                result += arrIncluding[i] + "\n";
-            }
-            return result;
+            return including;
         }
     }
 }

@@ -13,10 +13,8 @@ namespace C2MDataRelation
     class BusinessService
     {
         private string bus_svc_cd, svc_name, owner_flg, app_svc_id;
-        private string rootSchema, finalSchema;
-        private ArrayList arrIncluded, arrIncluding;
+        private string rootSchema, finalSchema, including, included;
         private int version;
-        OracleConnection conn;
 
         public BusinessService()
         {
@@ -27,13 +25,15 @@ namespace C2MDataRelation
             this.app_svc_id = null;
         }
 
-        public BusinessService(OracleDataReader odr, OracleConnection con, string root, string final)
+        public BusinessService(OracleDataReader odr, OracleConnection con, string included, string including, string root, string final)
         {
-            this.bus_svc_cd = odr.GetString(odr.GetOrdinal("BUS_SVC_CD"));
-            this.svc_name = odr.GetString(odr.GetOrdinal("SVC_NAME"));
+            this.bus_svc_cd = odr.GetString(odr.GetOrdinal("BUS_SVC_CD")).Trim();
+            this.svc_name = odr.GetString(odr.GetOrdinal("SVC_NAME")).Trim();
             this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
-            this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG"));
-            this.app_svc_id = odr.GetString(odr.GetOrdinal("APP_SVC_ID"));
+            this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG")).Trim();
+            this.app_svc_id = odr.GetString(odr.GetOrdinal("APP_SVC_ID")).Trim();
+            this.included = included;
+            this.including = including;
             this.rootSchema = root;
             this.finalSchema = final;
         }
@@ -59,34 +59,24 @@ namespace C2MDataRelation
         public void setfinalSchema(string finalSchema) { this.finalSchema = finalSchema; }
         public string getfinalSchema() { return this.finalSchema; }
 
-        public void setIncluded(ArrayList arr)
+        public void setIncluded(string included)
         {
-            arrIncluded = arr;
+            this.included = included;
         }
 
         public string getIncluded()
         {
-            string result = "";
-            for (int i = 0; i < arrIncluded.Count; i++)
-            {
-                result += arrIncluded[i] + "\n";
-            }
-            return result;
+            return included;
         }
 
-        public void setIncluding(ArrayList arr)
+        public void setIncluding(string including)
         {
-            arrIncluding = arr;
+            this.including = including;
         }
 
         public string getIncluding()
         {
-            string result = "";
-            for (int i = 0; i < arrIncluding.Count; i++)
-            {
-                result += arrIncluding[i] + "\n";
-            }
-            return result;
+            return including;
         }
     }
 }

@@ -13,8 +13,7 @@ namespace C2MDataRelation
     class BusinessObject
     {
         private string bus_obj_cd, maint_obj_cd, app_svc_id, life_cycle_bo_cd, owner_flg, parent_bo_cd, instance_ctrl_flg;
-        private string rootSchema, finalSchema;
-        private ArrayList arrIncluded, arrIncluding;
+        private string rootSchema, finalSchema, including, included;
         private int version;
         
 
@@ -32,22 +31,24 @@ namespace C2MDataRelation
             this.finalSchema = null;
         }
 
-        public BusinessObject(OracleDataReader odr, OracleConnection con, string root, string final)
+        public BusinessObject(OracleDataReader odr, OracleConnection con, string included, string including, string root, string final)
         {
-            this.bus_obj_cd = odr.GetString(odr.GetOrdinal("BUS_OBJ_CD"));
+            this.bus_obj_cd = odr.GetString(odr.GetOrdinal("BUS_OBJ_CD")).Trim();
             this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
-            this.maint_obj_cd = odr.GetString(odr.GetOrdinal("MAINT_OBJ_CD"));
-            this.app_svc_id = odr.GetString(odr.GetOrdinal("APP_SVC_ID"));
-            this.life_cycle_bo_cd = odr.GetString(odr.GetOrdinal("LIFE_CYCLE_BO_CD"));
-            this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG"));
-            this.parent_bo_cd = odr.GetString(odr.GetOrdinal("PARENT_BO_CD"));
-            this.instance_ctrl_flg = odr.GetString(odr.GetOrdinal("INSTANCE_CTRL_FLG"));
+            this.maint_obj_cd = odr.GetString(odr.GetOrdinal("MAINT_OBJ_CD")).Trim();
+            this.app_svc_id = odr.GetString(odr.GetOrdinal("APP_SVC_ID")).Trim();
+            this.life_cycle_bo_cd = odr.GetString(odr.GetOrdinal("LIFE_CYCLE_BO_CD")).Trim();
+            this.owner_flg = odr.GetString(odr.GetOrdinal("OWNER_FLG")).Trim();
+            this.parent_bo_cd = odr.GetString(odr.GetOrdinal("PARENT_BO_CD")).Trim();
+            this.instance_ctrl_flg = odr.GetString(odr.GetOrdinal("INSTANCE_CTRL_FLG")).Trim();
+            this.included = included;
+            this.including = including;
             this.rootSchema = root;
             this.finalSchema = final;
         }
 
         public void setBus_obj_cd(string bus_obj_cd) { this.bus_obj_cd = bus_obj_cd; }
-        public string getBus_obj_cd() { return this.bus_obj_cd; }
+        public string getBus_obj_cd() { return bus_obj_cd; }
 
         public void setVersion(int version) { this.version = version; }
         public int getVersion() { return this.version; }
@@ -76,34 +77,24 @@ namespace C2MDataRelation
         public void setfinalSchema(string finalSchema) { this.finalSchema = finalSchema; }
         public string getfinalSchema() { return this.finalSchema; }
 
-        public void setIncluded(ArrayList arr)
+        public void setIncluded(string included)
         {
-            arrIncluded = arr;
+            this.included = included;
         }
 
         public string getIncluded()
         {
-            string result = "";
-            for (int i = 0; i < arrIncluded.Count; i++)
-            {
-                result += arrIncluded[i] + "\n";
-            }
-            return result;
+            return included;
         }
 
-        public void setIncluding(ArrayList arr)
+        public void setIncluding(string including)
         {
-            arrIncluding = arr;
+            this.including = including;
         }
 
         public string getIncluding()
         {
-            string result = "";
-            for (int i = 0; i < arrIncluding.Count; i++)
-            {
-                result += arrIncluding[i] + "\n";
-            }
-            return result;
+            return including;
         }
 
         public string ToString => "Business Object : " + bus_obj_cd + "\nVersion : " + version + "\nMaintanance Object Inherited : " + maint_obj_cd

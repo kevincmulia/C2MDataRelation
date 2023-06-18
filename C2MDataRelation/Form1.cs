@@ -27,7 +27,6 @@ namespace C2MDataRelation
         List<BusinessObject> businessObjects = new List<BusinessObject>();
         List<BusinessService> businessServices = new List<BusinessService>();
         List<DataArea> dataAreas = new List<DataArea>();
-        ArrayList arr = new ArrayList();
 
         public void connToDB()
         {
@@ -104,23 +103,23 @@ namespace C2MDataRelation
             return nxml;
         }
 
-        private ArrayList findSchemaAffected(string schemaName) { 
-            string query = "SELECT schema_name from f1_schema where schema_defn like '%\""+schemaName+"\"%'";
+        private string findSchemaAffected(string schemaName) { 
+            string query = "SELECT schema_name from f1_schema where schema_defn like '%"+schemaName+"%'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            ArrayList arrList = new ArrayList();
+            string included = "";
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                        arrList.Add(orr.GetString(0));
+                        included += orr.GetString(0) + "\n";
                     }
                 }
             }
             //if arraylist.size = 0 then its not included in other schema
-            return arrList;
+            return included;
         }
 
         private string printCN(XmlNode parentNode)
@@ -302,7 +301,6 @@ namespace C2MDataRelation
                     {
                         if (xn.Name == "includeBO" || xn.Name == "includeDA" || xn.Name == "includeBS")
                         {
-                            arr.Add(xn.Attributes["name"].Value);
                             temp += getSchemas(xn.Attributes["name"].Value);
                         }
                         else
@@ -341,6 +339,32 @@ namespace C2MDataRelation
                     else if (xn.NodeType == XmlNodeType.EndElement)
                     {
                         temp += "</" + xn.Name + ">\n";
+                    }
+                }
+            }
+            return temp;
+        }
+
+        private string getInclude(string schemaName)
+        {
+            XmlNodeList cNode;
+            string temp = "";
+            string schema = @"" + getSchema(schemaName);
+            XmlDocument xd = new XmlDocument();
+            xd.LoadXml(schema);
+            XmlNode node = xd.DocumentElement;
+            if (node.HasChildNodes)
+            {
+                cNode = node.ChildNodes;
+                for (int i = 0; i < cNode.Count; i++)
+                {
+                    XmlNode xn = node.ChildNodes[i];
+                    if (xn.NodeType == XmlNodeType.Element)
+                    {
+                        if (xn.Name == "includeBO" || xn.Name == "includeDA" || xn.Name == "includeBS")
+                        {
+                            temp += getInclude(xn.Attributes["name"].Value) + xn.Attributes["name"].Value + "\n";
+                        }
                     }
                 }
             }
@@ -427,14 +451,14 @@ namespace C2MDataRelation
                     {
                         if (type == "Business Object")
                         {
-                            businessObjects.Add(new BusinessObject(orr, conn, getSchema(name), getFullSchema(name)));
+                            businessObjects.Add(new BusinessObject(orr, conn, findSchemaAffected(name), getInclude(name), getSchema(name), getFullSchema(name)));
                         }
                         else if (type == "Business Service")
                         {
-                            businessServices.Add(new BusinessService(orr, conn, getSchema(name), getFullSchema(name)));
+                            businessServices.Add(new BusinessService(orr, conn, findSchemaAffected(name), getInclude(name), getSchema(name), getFullSchema(name)));
                         }else if (type == "Data Area")
                         {
-                            dataAreas.Add(new DataArea(orr, conn, getSchema(name), getFullSchema(name)));
+                            dataAreas.Add(new DataArea(orr, conn, findSchemaAffected(name), getInclude(name), getSchema(name), getFullSchema(name)));
                         }
                     }
                 }
@@ -453,29 +477,57 @@ namespace C2MDataRelation
                 {
                     if (comboBox1.Text.Equals("Business Object") || comboBox1.Text.Equals("Business Service") || comboBox1.Text.Equals("Data Area"))
                     {
-                        //if (comboBox1.Text.Equals("Business Object"))
-                        //{
-                        //    getInfo(textBox1.Text, comboBox1.Text);
-                        //}
                         try
                         {
                             if(comboBox1.Text.Equals("Business Object"))
                             {
-                                getInfo(textBox1.Text, comboBox1.Text);
-                                displayTVandRTB(businessObjects[businessObjects.Count-1].getfinalSchema());
+                                bool newBO = true;
+                                foreach (BusinessObject bo in businessObjects)
+                                {
+                                    if (bo.getBus_obj_cd() == textBox1.Text)
+                                    {
+                                        displayTVandRTB(bo.getfinalSchema());
+                                        newBO = false;
+                                    }
+                                }
+                                if (newBO)
+                                {
+                                    getInfo(textBox1.Text, comboBox1.Text);
+                                    displayTVandRTB(businessObjects[businessObjects.Count - 1].getfinalSchema());
+                                }
                             }else if(comboBox1.Text.Equals("Business Service"))
                             {
-                                getInfo(textBox1.Text, "Business Service");
-                                displayTVandRTB(businessServices[businessServices.Count-1].getfinalSchema());
+                                bool newBS = true;
+                                foreach (BusinessService bs in businessServices)
+                                {
+                                    if (bs.getBus_svc_cd() == textBox1.Text)
+                                    {
+                                        displayTVandRTB(bs.getfinalSchema());
+                                        newBS = false;
+                                    }
+                                }
+                                if (newBS)
+                                {
+                                    getInfo(textBox1.Text, "Business Service");
+                                    displayTVandRTB(businessServices[businessServices.Count - 1].getfinalSchema());
+                                }
                             }else if(comboBox1.Text.Equals("Data Area"))
                             {
-                                getInfo(textBox1.Text, "Data Area");
-                                displayTVandRTB(dataAreas[dataAreas.Count-1].getfinalSchema());
+                                bool newDA = true;
+                                foreach (DataArea da in dataAreas)
+                                {
+                                    if (da.getData_area_cd() == textBox1.Text)
+                                    {
+                                        displayTVandRTB(da.getfinalSchema());
+                                        newDA = false;
+                                    }
+                                }
+                                if (newDA)
+                                {
+                                    getInfo(textBox1.Text, "Data Area");
+                                    displayTVandRTB(dataAreas[dataAreas.Count - 1].getfinalSchema());
+                                }
                             }
-
-                            //GET RESULT OF ALL SCHEMA
-                            //string allSchema = getFullSchema(textBox1.Text);
-                            //MessageBox.Show(allSchema);
                         }
                         catch (Exception err)
                         {
@@ -495,7 +547,7 @@ namespace C2MDataRelation
                         {
                             usageRulesLoaded.Add(ur.Name, ur);
                             treeView1.Nodes[0].Nodes.Add(ur.Name);
-                            ur.addEligibilityCriteria
+                            //ur.addEligibilityCriteria
                         }
                         richTextBox1.Text = ug.print();
                     }
@@ -540,42 +592,42 @@ namespace C2MDataRelation
                             richTextBox1.Clear();
                             if (comboBox1.Text.Equals("Business Object"))
                             {
-                                richTextBox1.AppendText("Mention By:\n");
-                                businessObjects[businessObjects.Count - 1].setIncluded(findSchemaAffected(textBox1.Text));
-                                richTextBox1.AppendText(businessObjects[businessObjects.Count - 1].getIncluded());
-                                richTextBox1.AppendText("Mentioning:\n");
-                                businessObjects[businessObjects.Count - 1].setIncluding(arr);
-                                richTextBox1.AppendText(businessObjects[businessObjects.Count - 1].getIncluding());
+                                foreach(BusinessObject bo in businessObjects)
+                                {
+                                    if (bo.getBus_obj_cd() == textBox1.Text)
+                                    {
+                                        richTextBox1.AppendText("Mentioned By:\n");
+                                        richTextBox1.AppendText(bo.getIncluded());
+                                        richTextBox1.AppendText("\nMentioning:\n");
+                                        richTextBox1.AppendText(bo.getIncluding());
+                                    }
+                                }
                             }else if (comboBox1.Text.Equals("Business Service"))
                             {
-                                richTextBox1.AppendText("Mention By:\n");
-                                businessServices[businessServices.Count - 1].setIncluded(findSchemaAffected(textBox1.Text));
-                                richTextBox1.AppendText(businessServices[businessServices.Count - 1].getIncluded());
-                                richTextBox1.AppendText("Mentioning:\n");
-                                businessServices[businessServices.Count - 1].setIncluding(arr);
-                                richTextBox1.AppendText(businessServices[businessServices.Count - 1].getIncluding());
+                                foreach (BusinessService bs in businessServices)
+                                {
+                                    if (bs.getBus_svc_cd() == textBox1.Text)
+                                    {
+                                        richTextBox1.AppendText("Mentioned By:\n");
+                                        richTextBox1.AppendText(bs.getIncluded());
+                                        richTextBox1.AppendText("\nMentioning:\n");
+                                        richTextBox1.AppendText(bs.getIncluding());
+                                    }
+                                }
                             }
                             else if (comboBox1.Text.Equals("Data Area"))
                             {
-                                richTextBox1.AppendText("Mention By:\n");
-                                dataAreas[dataAreas.Count - 1].setIncluded(findSchemaAffected(textBox1.Text));
-                                richTextBox1.AppendText(dataAreas[dataAreas.Count - 1].getIncluded());
-                                richTextBox1.AppendText("Mentioning:\n");
-                                dataAreas[dataAreas.Count - 1].setIncluding(arr);
-                                richTextBox1.AppendText(dataAreas[dataAreas.Count - 1].getIncluding());
+                                foreach (DataArea da in dataAreas)
+                                {
+                                    if (da.getData_area_cd() == textBox1.Text)
+                                    {
+                                        richTextBox1.AppendText("Mentioned By:\n");
+                                        richTextBox1.AppendText(da.getIncluded());
+                                        richTextBox1.AppendText("\nMentioning:\n");
+                                        richTextBox1.AppendText(da.getIncluding());
+                                    }
+                                }
                             }
-                            //ArrayList arr = findSchemaAffected(textBox1.Text);
-                            //if (arr.Count == 0)
-                            //{
-                            //    MessageBox.Show("Schema is not reference in other schema");
-                            //}
-                            //else
-                            //{
-                            //    foreach (string schema in arr)
-                            //    {
-                            //        richTextBox1.AppendText(schema + "\n");
-                            //    }
-                            //}
                         }
                         catch (Exception err)
                         {
