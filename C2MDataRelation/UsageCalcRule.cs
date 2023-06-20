@@ -20,7 +20,7 @@ namespace C2MDataRelation
         String boDataArea;
         List<EligibilityCriteria> eligibilityCriteria;
         String schema;
-        List<sq> sqList;
+        List<Sq> sqList;
         public UsageCalcRule(string usageGroup, string name, int sequence, string usageRuleType, string boDataArea, string referredUsageGroup, List<EligibilityCriteria> eligibilityCriteria)
         {
             this.usageGroup = usageGroup;
@@ -40,7 +40,7 @@ namespace C2MDataRelation
             this.UsageRuleType = orr.GetString(orr.GetOrdinal("BUS_OBJ_CD"));
             this.BoDataArea = "<" + this.name + ">\n" + orr.GetString(orr.GetOrdinal("BO_DATA_AREA")) + "</" + this.name + ">";
             this.EligibilityCriteria = new List<EligibilityCriteria>();
-            this.SqList = new List<sq>();
+            this.SqList = new List<Sq>();
         }
 
         public string Name { get => name; set => name = value; }
@@ -51,9 +51,9 @@ namespace C2MDataRelation
         internal List<EligibilityCriteria> EligibilityCriteria { get => eligibilityCriteria; set => eligibilityCriteria = value; }
         public string UsageGroup { get => usageGroup; set => usageGroup = value; }
         public string Schema { get => schema; set => schema = value; }
-        internal List<sq> SqList { get => sqList; set => sqList = value; }
+        internal List<Sq> SqList { get => sqList; set => sqList = value; }
 
-        public void addSq(sq SQ)
+        public void addSq(Sq SQ)
         {
             this.SqList.Add(SQ);
         }
@@ -66,13 +66,13 @@ namespace C2MDataRelation
             XmlNodeList uomList = xd.GetElementsByTagName("uom");
             XmlNodeList sqiList = xd.GetElementsByTagName("sqi");
             XmlNodeList touList = xd.GetElementsByTagName("tou");
-            Dictionary<sq, int> filterMap = new Dictionary<sq, int>();
+            Dictionary<Sq, int> filterMap = new Dictionary<Sq, int>();
             //needs jesus
             for (int i = 0; i < uomList.Count; i++)
             {
                 XmlNode parent = uomList[i].ParentNode;
                 for (int j = 0; j < parent.ChildNodes.Count; j++) {
-                    sq tempSQ = new sq();
+                    Sq tempSQ = new Sq();
                     if (parent.ChildNodes[j].NodeType == XmlNodeType.Element)
                     {
                         if (parent.ChildNodes[j].Name.Equals("uom")) {
@@ -106,7 +106,7 @@ namespace C2MDataRelation
                 XmlNode parent = sqiList[i].ParentNode;
                 for (int j = 0; j < parent.ChildNodes.Count; j++)
                 {
-                    sq tempSQ = new sq();
+                    Sq tempSQ = new Sq();
                     if (parent.ChildNodes[j].NodeType == XmlNodeType.Element)
                     {
                         if (parent.ChildNodes[j].Name.Equals("uom"))
@@ -142,7 +142,7 @@ namespace C2MDataRelation
                 XmlNode parent = touList[i].ParentNode;
                 for (int j = 0; j < parent.ChildNodes.Count; j++)
                 {
-                    sq tempSQ = new sq();
+                    Sq tempSQ = new Sq();
                     if (parent.ChildNodes[j].NodeType == XmlNodeType.Element)
                     {
                         if (parent.ChildNodes[j].Name.Equals("uom"))
@@ -173,7 +173,7 @@ namespace C2MDataRelation
 
                 }
             }
-            foreach (KeyValuePair<sq, int> entry in filterMap)
+            foreach (KeyValuePair<Sq, int> entry in filterMap)
             {
                 this.SqList.Add(entry.Key);
             }
@@ -230,7 +230,7 @@ namespace C2MDataRelation
         public string printSQ()
         {
             String result = "";
-            foreach (sq SQ in this.sqList) {
+            foreach (Sq SQ in this.sqList) {
                 result += SQ.print() + "\n";
             }
             return result;

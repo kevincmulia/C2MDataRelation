@@ -83,9 +83,10 @@
   <ItemGroup>
     <Compile Include="BusinessObject.cs" />
     <Compile Include="BusinessService.cs" />
+    <Compile Include="CalcRule.cs" />
     <Compile Include="DataArea.cs" />
     <Compile Include="EligibilityCriteria.cs" />
-    <Compile Include="sq.cs" />
+    <Compile Include="Sq.cs" />
     <Compile Include="UsageCalcGroup.cs" />
     <Compile Include="UsageCalcRule.cs" />
     <Compile Include="Form1.cs">

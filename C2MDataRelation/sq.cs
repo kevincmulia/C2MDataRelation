@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace C2MDataRelation
 {
-    class sq
+    class Sq
     {
         String uom;
         String sqi;
         String tou;
 
-        public sq(string uom, string sqi, string tou)
+        public Sq(string uom, string sqi, string tou)
         {
             this.uom = uom;
             this.sqi = sqi;
             this.tou = tou;
         }
 
-        public sq()
+        public Sq()
         {
         }
 
@@ -27,7 +27,7 @@ namespace C2MDataRelation
         public string Sqi { get => sqi; set => sqi = value; }
         public string Tou { get => tou; set => tou = value; }
 
-        public bool equals(sq otherSq) {
+        public bool equals(Sq otherSq) {
             if (this.uom.Equals(otherSq.Uom) && this.sqi.Equals(otherSq.Sqi) && this.tou.Equals(otherSq.Tou)) {
                 return true;
             }
@@ -40,7 +40,7 @@ namespace C2MDataRelation
 
         public override bool Equals(object obj)
         {
-            return obj is sq sq &&
+            return obj is Sq sq &&
                    uom == sq.uom &&
                    sqi == sq.sqi &&
                    tou == sq.tou;
