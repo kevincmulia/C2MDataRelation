@@ -23,7 +23,7 @@ namespace C2MDataRelation
     {
         //GLOBAL VAR
         private OracleConnection conn;
-        Dictionary<String,UsageRule> usageRulesLoaded;
+        Dictionary<String,UsageCalcRule> usageRulesLoaded;
         List<BusinessObject> businessObjects = new List<BusinessObject>();
         List<BusinessService> businessServices = new List<BusinessService>();
         List<DataArea> dataAreas = new List<DataArea>();
@@ -172,18 +172,18 @@ namespace C2MDataRelation
         }
 
         
-        private List<UsageRule> findUsageRuleReferences(string usageRuleName) { 
+        private List<UsageCalcRule> findUsageRuleReferences(string usageRuleName) { 
             string query = "SElect * from D1_USG_RULE where referred_usg_grp_cd = '"+usageRuleName+"'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            List<UsageRule> result = new List<UsageRule>();
+            List<UsageCalcRule> result = new List<UsageCalcRule>();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                        result.Add(new UsageRule(orr));
+                        result.Add(new UsageCalcRule(orr));
                     }
                 }
             }
@@ -214,20 +214,20 @@ namespace C2MDataRelation
             return result;
         }
         //get usage rule basedo n the name
-        private UsageRule getUsageRule(string usageRuleName)
+        private UsageCalcRule getUsageRule(string usageRuleName)
         {
             string query = "SElect * from D1_USG_RULE where  usg_rule_cd ='" + usageRuleName + "'";
             
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            List<UsageRule> result = new List<UsageRule>();
+            List<UsageCalcRule> result = new List<UsageCalcRule>();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                       return (new UsageRule(orr));
+                       return (new UsageCalcRule(orr));
                     }
                 }
             }
@@ -237,20 +237,20 @@ namespace C2MDataRelation
         /**
          * returnlist of usage rule given the usage group name
          * **/
-        private List<UsageRule> getUsageRuleFromUsageGroup(string usageGroup)
+        private List<UsageCalcRule> getUsageRuleFromUsageGroup(string usageGroup)
         {
             string query = "SElect * from D1_USG_RULE where usg_grp_cd = '" + usageGroup + "'";
             
             MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            List<UsageRule> result = new List<UsageRule>();
+            List<UsageCalcRule> result = new List<UsageCalcRule>();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
                 {
                     while (orr.Read())
                     {
-                        UsageRule ur = new UsageRule(orr);
+                        UsageCalcRule ur = new UsageCalcRule(orr);
                         ur.Schema = getFullSchema(ur.UsageRuleType);
                         ur.combineSchemaAndBoDataArea();
                         //ur.getSq();
@@ -538,12 +538,12 @@ namespace C2MDataRelation
                     { //Usage Calculation Group
                         richTextBox1.Clear();
                         string usageRuleGroupName = textBox1.Text;
-                        usageGroup ug = new usageGroup(usageRuleGroupName);
+                        UsageCalcGroup ug = new UsageCalcGroup(usageRuleGroupName);
                         ug.UsageRuleList = getUsageRuleFromUsageGroup(usageRuleGroupName);
-                        usageRulesLoaded = new Dictionary<string, UsageRule>();
+                        usageRulesLoaded = new Dictionary<string, UsageCalcRule>();
                         treeView1.Nodes.Clear();
                         treeView1.Nodes.Add(new TreeNode(textBox1.Text));
-                        foreach (UsageRule ur in ug.UsageRuleList)//to be used in another place
+                        foreach (UsageCalcRule ur in ug.UsageRuleList)//to be used in another place
                         {
                             usageRulesLoaded.Add(ur.Name, ur);
                             treeView1.Nodes[0].Nodes.Add(ur.Name);
@@ -637,12 +637,12 @@ namespace C2MDataRelation
                     else if (comboBox1.Text.Equals("Usage Calculation Group")) {
                         string text = textBox1.Text;
                         
-                        UsageRule usageRule;
+                        UsageCalcRule usageRule;
                         String result = "";
                         if (usageRulesLoaded.ContainsKey(text))//calc rulle
                         {
                             usageRule = usageRulesLoaded[text];
-                            foreach (KeyValuePair<string, UsageRule> entry in usageRulesLoaded)
+                            foreach (KeyValuePair<string, UsageCalcRule> entry in usageRulesLoaded)
                             {
                                 //entry.Value or entry.Key
                                 if (!entry.Key.Equals(usageRule.Name) && entry.Value.sqListEquals(usageRule)) {

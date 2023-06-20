@@ -10,7 +10,7 @@ using System.Xml;
 
 namespace C2MDataRelation
 {
-    class UsageRule
+    class UsageCalcRule
     {
         String usageGroup;
         String name;
@@ -21,7 +21,7 @@ namespace C2MDataRelation
         List<EligibilityCriteria> eligibilityCriteria;
         String schema;
         List<sq> sqList;
-        public UsageRule(string usageGroup, string name, int sequence, string usageRuleType, string boDataArea, string referredUsageGroup, List<EligibilityCriteria> eligibilityCriteria)
+        public UsageCalcRule(string usageGroup, string name, int sequence, string usageRuleType, string boDataArea, string referredUsageGroup, List<EligibilityCriteria> eligibilityCriteria)
         {
             this.usageGroup = usageGroup;
             this.Name = name;
@@ -31,7 +31,7 @@ namespace C2MDataRelation
             this.BoDataArea = boDataArea;
             this.EligibilityCriteria = eligibilityCriteria;
         }
-        public UsageRule(OracleDataReader orr)
+        public UsageCalcRule(OracleDataReader orr)
         {
             this.usageGroup = orr.GetString(orr.GetOrdinal("USG_GRP_CD"));
             this.name = orr.GetString(orr.GetOrdinal("USG_RULE_CD"));
@@ -238,7 +238,7 @@ namespace C2MDataRelation
 
         public override bool Equals(object obj)
         {
-            return obj is UsageRule rule &&
+            return obj is UsageCalcRule rule &&
                    usageGroup == rule.usageGroup &&
                    name == rule.name &&
                    sequence == rule.sequence &&
@@ -246,7 +246,7 @@ namespace C2MDataRelation
                    usageRuleType == rule.usageRuleType &&
                    boDataArea == rule.boDataArea;
         }
-        public bool sqListEquals(UsageRule rule)
+        public bool sqListEquals(UsageCalcRule rule)
         {
             if (this.SqList.Count>0 && rule.SqList.Count>0) {
                 var firstNotSecond = this.SqList.Except(rule.SqList).ToList();

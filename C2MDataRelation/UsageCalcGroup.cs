@@ -6,24 +6,24 @@ using System.Threading.Tasks;
 
 namespace C2MDataRelation
 {
-    class usageGroup
+    class UsageCalcGroup
     {
         String usageGroupName;
-        List<UsageRule> usageRuleList;
+        List<UsageCalcRule> usageRuleList;
 
-        public usageGroup(string usageGroupName, List<UsageRule> usageRuleList)
+        public UsageCalcGroup(string usageGroupName, List<UsageCalcRule> usageRuleList)
         {
             this.usageGroupName = usageGroupName;
             this.usageRuleList = usageRuleList;
         }
-        public usageGroup(string usageGroupName) {
+        public UsageCalcGroup(string usageGroupName) {
             this.usageGroupName = usageGroupName;
-            usageRuleList = new List<UsageRule>();
+            usageRuleList = new List<UsageCalcRule>();
         }
 
         public string UsageGroupName { get => usageGroupName; set => usageGroupName = value; }
-        internal List<UsageRule> UsageRuleList { get => usageRuleList; set => usageRuleList = value; }
-        public void addUsageRule(UsageRule usageRule) {
+        internal List<UsageCalcRule> UsageRuleList { get => usageRuleList; set => usageRuleList = value; }
+        public void addUsageRule(UsageCalcRule usageRule) {
             this.usageRuleList.Add(usageRule);
         }
         public string print() {
@@ -35,7 +35,7 @@ namespace C2MDataRelation
                 result = result + "there are no usage rule list";
             }
             else {
-                foreach (UsageRule usageRule in this.usageRuleList)
+                foreach (UsageCalcRule usageRule in this.usageRuleList)
                 {
                     result += usageRule.Name+"\n"; 
                 }
