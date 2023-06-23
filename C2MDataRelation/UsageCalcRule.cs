@@ -180,43 +180,7 @@ namespace C2MDataRelation
 
 
         }
-        public void combineSchemaAndBoDataArea() {
-            String result = "";
-            if (this.schema != null && this.boDataArea != null)
-            {
-                Dictionary<String, String> nodes = new Dictionary<string, string>();
-
-                XmlDocument xd = new XmlDocument();
-                xd.LoadXml(this.boDataArea);
-                XmlNode node = xd.DocumentElement;
-
-                XmlNode xn = node.ChildNodes[0];//initializing only
-
-                XmlNodeList cNode = node.ChildNodes;
-                for (int i = 0; i < cNode.Count; i++) {
-                    xn = node.ChildNodes[i];
-                    if (xn.NodeType == XmlNodeType.Element) {
-                        nodes.Add(xn.Name, xn.InnerXml);
-                    }
-                }
-                xd = new XmlDocument();
-                xd.LoadXml(this.schema);
-                node = xd.DocumentElement;
-                cNode = node.ChildNodes;
-                for (int i = 0; i < cNode.Count; i++)
-                {
-                    xn = node.ChildNodes[i];
-                    if (xn.NodeType == XmlNodeType.Element)
-                    {
-                        if (nodes.ContainsKey(xn.Name)) {
-                            xn.InnerXml = nodes[xn.Name];
-                        }
-                    }
-                }
-                this.schema = xd.OuterXml;
-                //asdasd
-            }
-        }
+        
         public string print() {
             String result = "";
             foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(this))
