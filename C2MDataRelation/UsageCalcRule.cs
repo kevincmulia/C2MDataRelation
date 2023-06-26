@@ -38,7 +38,10 @@ namespace C2MDataRelation
             this.Sequence = orr.GetInt16(orr.GetOrdinal("EXE_SEQ"));
             this.ReferredUsageGroup = orr.GetString(orr.GetOrdinal("REFERRED_USG_GRP_CD"));
             this.UsageRuleType = orr.GetString(orr.GetOrdinal("BUS_OBJ_CD"));
-            this.BoDataArea = "<" + this.name + ">\n" + orr.GetString(orr.GetOrdinal("BO_DATA_AREA")) + "</" + this.name + ">";
+            if (orr.GetString(orr.GetOrdinal("BO_DATA_AREA")) != null)
+            {
+                this.BoDataArea = "<" + this.name + ">\n" + orr.GetString(orr.GetOrdinal("BO_DATA_AREA")) + "</" + this.name + ">";
+            }
             this.EligibilityCriteria = new List<EligibilityCriteria>();
             this.SqList = new List<Sq>();
         }

@@ -16,7 +16,8 @@ namespace C2MDataRelation
 
         public string CalcGroupName { get => calcGroupName; set => calcGroupName = value; }
         public int Seq { get => seq; set => seq = value; }
-        internal List<CalcRule> CalcRuleList { get => calcRuleList; set => calcRuleList = value; }
+        public List<CalcRule> CalcRuleList { get => calcRuleList; set => calcRuleList = value; }
+        public string Effdate { get => effdate; set => effdate = value; }
 
         public CalcGroup()
         {
@@ -41,8 +42,10 @@ namespace C2MDataRelation
         public string print()
         {
             string result = "";
-            result = result + " name = " + calcGroupName + "\n";
-            result = result + "usage rule list: \n";
+            result = result + " name = " + this.calcGroupName + "\n";
+            result = result + " sequence = " + this.seq + "\n";
+            result = result + " effdate = " + this.effdate + "\n";
+            result = result + " usage rule list: \n";
             if (this.calcRuleList.Count == 0)
             {
                 result = result + "there are no usage rule list";
@@ -51,7 +54,7 @@ namespace C2MDataRelation
             {
                 foreach (CalcRule calcRule in this.calcRuleList)
                 {
-                    result += calcRule.Name + "\n";
+                    result += "\t"+calcRule.Name + "\n";
                 }
             }
             return result;

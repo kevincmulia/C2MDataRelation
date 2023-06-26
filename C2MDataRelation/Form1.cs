@@ -22,7 +22,8 @@ namespace C2MDataRelation
     {
         //GLOBAL VAR
         private OracleConnection conn;
-        Dictionary<String,UsageCalcRule> usageRulesLoaded;
+        Dictionary<String, UsageCalcRule> usageRulesLoaded;
+        RateSchedule rateScheduleLoaded;
         List<BusinessObject> businessObjects = new List<BusinessObject>();
         List<BusinessService> businessServices = new List<BusinessService>();
         List<DataArea> dataAreas = new List<DataArea>();
@@ -53,10 +54,11 @@ namespace C2MDataRelation
         {
             comboBox1.Items.Add("Algorithm");
         }
-        private void changeSomething(string tag,string value) { 
-            
+        private void changeSomething(string tag, string value)
+        {
+
         }
-        
+
         private void AddNode(XmlNode inXmlNode, TreeNode inTreeNode)
         {
             XmlNode xNode;
@@ -82,14 +84,14 @@ namespace C2MDataRelation
 
         private string removeSchema(string xml)
         {
-            string line,    nxml = "";
+            string line, nxml = "";
             StringReader sr = new StringReader(xml);
             while (true)
             {
                 line = sr.ReadLine();
                 if (line == "<schema>" || line == "</schema>")
                 {
-                    
+
                 }
                 else
                 {
@@ -103,8 +105,9 @@ namespace C2MDataRelation
             return nxml;
         }
 
-        private string findSchemaAffected(string schemaName) { 
-            string query = "SELECT schema_name from f1_schema where schema_defn like '%"+schemaName+"%'";
+        private string findSchemaAffected(string schemaName)
+        {
+            string query = "SELECT schema_name from f1_schema where schema_defn like '%" + schemaName + "%'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
             string included = "";
@@ -171,9 +174,10 @@ namespace C2MDataRelation
             return temp;
         }
 
-        
-        private List<UsageCalcRule> findUsageRuleReferences(string usageRuleName) { 
-            string query = "SElect * from D1_USG_RULE where referred_usg_grp_cd = '"+usageRuleName+"'";
+
+        private List<UsageCalcRule> findUsageRuleReferences(string usageRuleName)
+        {
+            string query = "SElect * from D1_USG_RULE where referred_usg_grp_cd = '" + usageRuleName + "'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
             List<UsageCalcRule> result = new List<UsageCalcRule>();
@@ -193,10 +197,11 @@ namespace C2MDataRelation
         /**
         * return list of usage group that is affected the usage group and the groups that has a rule calling to the usage group
         * **/
-        private List<String> findUsageGroupAffected(string usageGroup) {
+        private List<String> findUsageGroupAffected(string usageGroup)
+        {
             //select usg_grp_cd from D1_USG_RULE where usg_rule_cd ='KM-DSC';
             //select usg_grp_cd from D1_USG_RULE where referred_usg_grp_cd in (select usg_grp_cd from D1_USG_RULE where usg_rule_cd = 'KM-DSC');
-            string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_grp_cd = '" + usageGroup + "' or referred_usg_grp_cd = '"+ usageGroup + "'";
+            string query = "SElect distinct(usg_grp_cd) from D1_USG_RULE where usg_grp_cd = '" + usageGroup + "' or referred_usg_grp_cd = '" + usageGroup + "'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
             List<String> result = new List<String>();
@@ -219,7 +224,7 @@ namespace C2MDataRelation
         private List<UsageCalcRule> getUsageRuleFromUsageGroup(string usageGroup)
         {
             string query = "SElect * from D1_USG_RULE where usg_grp_cd = '" + usageGroup + "'";
-            
+
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
             List<UsageCalcRule> result = new List<UsageCalcRule>();
@@ -231,7 +236,7 @@ namespace C2MDataRelation
                     {
                         UsageCalcRule ur = new UsageCalcRule(orr);
                         ur.Schema = getFullSchema(ur.UsageRuleType);
-                        ur.Schema = combineSchemaAndBoDataArea(ur.Schema,ur.BoDataArea);
+                        ur.Schema = combineSchemaAndBoDataArea(ur.Schema, ur.BoDataArea);
                         //ur.EligibilityCriteria = getEligibilityCriterias(ur.Name);
                         //ur.getSq();
                         result.Add(ur);
@@ -243,11 +248,12 @@ namespace C2MDataRelation
         /**
          * return list of eligibility criteria given the usage rule name
          * **/
-        private List<EligibilityCriteria> getEligibilityCriterias(string usageRuleName) { 
-            string query = "select * from D1_USG_RULE_ELIG_CRIT where usg_rule_cd = '"+usageRuleName+"'";
+        private List<EligibilityCriteria> getEligibilityCriterias(string usageRuleName)
+        {
+            string query = "select * from D1_USG_RULE_ELIG_CRIT where usg_rule_cd = '" + usageRuleName + "'";
             //MessageBox.Show(query);
             OracleCommand orc = new OracleCommand(query, conn);
-            List<EligibilityCriteria> result =new List<EligibilityCriteria>();
+            List<EligibilityCriteria> result = new List<EligibilityCriteria>();
             using (OracleDataReader orr = orc.ExecuteReader())
             {
                 if (orr.HasRows)
@@ -260,7 +266,8 @@ namespace C2MDataRelation
             }
             return result;
         }
-        private RateSchedule getRateSchedule(string rateScheduleName) {
+        private RateSchedule getRateSchedule(string rateScheduleName)
+        {
             string query = "SElect * from CI_RS where RS_CD = '" + rateScheduleName + "'";
 
             RateSchedule rs = new RateSchedule();
@@ -272,7 +279,7 @@ namespace C2MDataRelation
                     while (orr.Read())
                     {
                         rs = new RateSchedule(orr);
-                        return rs;
+
                     }
                 }
             }
@@ -281,7 +288,8 @@ namespace C2MDataRelation
             rs.PostProcessCalcGroupList = getCalcGroup(rateScheduleName, "C1_RS_POST_PROC");
             return rs;
         }
-        private List<CalcRule> getCalcRule(String calcGroupName) {
+        private List<CalcRule> getCalcRule(String calcGroupName)
+        {
             string query = "SElect * from C1_CALC_RULE where CALC_GRP_CD = '" + calcGroupName + "'";
 
             List<CalcRule> result = new List<CalcRule>();
@@ -303,8 +311,9 @@ namespace C2MDataRelation
             return result;
 
         }
-        private List<CalcGroup> getCalcGroup(String rateScheduleName,String tableName) {
-            string query = "SElect * from "+tableName+" where RS_CD = '" + rateScheduleName + "'";
+        private List<CalcGroup> getCalcGroup(String rateScheduleName, String tableName)
+        {
+            string query = "SElect * from " + tableName + " where RS_CD = '" + rateScheduleName + "'";
             List<CalcGroup> result = new List<CalcGroup>();
             OracleCommand orc = new OracleCommand(query, conn);
             using (OracleDataReader orr = orc.ExecuteReader())
@@ -318,7 +327,8 @@ namespace C2MDataRelation
                         {
                             temp = new CalcGroup(orr, false);
                         }
-                        else {
+                        else
+                        {
                             temp = new CalcGroup(orr, true);
                         }
                         temp.CalcRuleList = getCalcRule(temp.CalcGroupName);
@@ -328,7 +338,8 @@ namespace C2MDataRelation
             }
             return result;
         }
-        private string getFullSchema(string schemaName) { 
+        private string getFullSchema(string schemaName)
+        {
             return "<" + schemaName + ">\n" + getSchemas(schemaName) + "</" + schemaName + ">";
         }
         private string getSchemas(string schemaName)
@@ -420,7 +431,8 @@ namespace C2MDataRelation
         }
 
         //GET BUSINESS OBJECT SCHEMA
-        private string getSchema(string schemaName) {
+        private string getSchema(string schemaName)
+        {
             string query = "SELECT SCHEMA_DEFN FROM F1_SCHEMA WHERE SCHEMA_NAME='" + schemaName + "'";
             OracleCommand orc = new OracleCommand(query, conn);
             using (OracleDataReader orr = orc.ExecuteReader())
@@ -429,7 +441,7 @@ namespace C2MDataRelation
                 {
                     while (orr.Read())
                     {
-                       return orr.GetString(0);
+                        return orr.GetString(0);
                     }
                 }
                 else
@@ -442,7 +454,7 @@ namespace C2MDataRelation
 
         public void fillTV(XmlDocument xmldoc)
         {
-            
+
             treeView1.Nodes.Clear();
             treeView1.Nodes.Add(new TreeNode(xmldoc.DocumentElement.Name));
             TreeNode node = new TreeNode();
@@ -466,20 +478,22 @@ namespace C2MDataRelation
                 richTextBox1.Text = sw.ToString();
             }
         }
-        public XmlDocument changeToXmldoc(String allSchema) {
+        public XmlDocument changeToXmldoc(String allSchema)
+        {
             string xmlTV = removeSchema(allSchema);
             XmlDocument xmldoc = new XmlDocument();
             xmldoc.LoadXml(xmlTV);
             return xmldoc;
         }
-        public void displayTVandRTB(String allSchema) {
+        public void displayTVandRTB(String allSchema)
+        {
             XmlDocument xmldoc = changeToXmldoc(allSchema);
             fillTV(xmldoc);
             printRTB(xmldoc);
 
 
         }
-        public String combineSchemaAndBoDataArea(String schema,String boDataArea)
+        public String combineSchemaAndBoDataArea(String schema, String boDataArea)
         {
             String result = "";
             if (schema != null && boDataArea != null)
@@ -557,7 +571,7 @@ namespace C2MDataRelation
                         }
                     }
                 }
-                
+
             }
         }
 
@@ -590,7 +604,8 @@ namespace C2MDataRelation
                                     getInfo(textBox1.Text, comboBox1.Text);
                                     displayTVandRTB(businessObjects[businessObjects.Count - 1].getfinalSchema());
                                 }
-                            } else if (comboBox1.Text.Equals("Business Service"))
+                            }
+                            else if (comboBox1.Text.Equals("Business Service"))
                             {
                                 bool newBS = true;
                                 foreach (BusinessService bs in businessServices)
@@ -606,7 +621,8 @@ namespace C2MDataRelation
                                     getInfo(textBox1.Text, "Business Service");
                                     displayTVandRTB(businessServices[businessServices.Count - 1].getfinalSchema());
                                 }
-                            } else if (comboBox1.Text.Equals("Data Area"))
+                            }
+                            else if (comboBox1.Text.Equals("Data Area"))
                             {
                                 bool newDA = true;
                                 foreach (DataArea da in dataAreas)
@@ -642,47 +658,60 @@ namespace C2MDataRelation
                         {
                             usageRulesLoaded.Add(ur.Name, ur);
                             treeView1.Nodes[0].Nodes.Add(ur.Name);
-                            
+
                         }
                         richTextBox1.Text = ug.print();
                     }
-                    else if (comboBox1.Text.Equals("Rate Schedule")) {
+                    else if (comboBox1.Text.Equals("Rate Schedule"))
+                    {
                         richTextBox1.Clear();
                         treeView1.Nodes.Clear();
                         string rateScheduleName = textBox1.Text;
                         RateSchedule rs = getRateSchedule(rateScheduleName);
+                        rateScheduleLoaded = rs;
 
                         treeView1.Nodes.Add(new TreeNode(rateScheduleName));
                         treeView1.Nodes[0].Nodes.Add("Pre-Processing Calculation Groups");
                         treeView1.Nodes[0].Nodes.Add("Rate Version Calculation Groups");
                         treeView1.Nodes[0].Nodes.Add("Post-Processing Calculation Groups");
-                        
-                        foreach (CalcGroup cg in rs.PreProcessCalcGroupList) 
+
+                        if (rs.PreProcessCalcGroupList != null)
                         {
-                            TreeNode preTN = new TreeNode(cg.CalcGroupName);
-                            foreach (CalcRule cr in cg.CalcRuleList) {
-                                preTN.Nodes.Add(cr.Name);
-                            }
-                            treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
-                        }
-                        foreach (CalcGroup cg in rs.RateVersionCalcGroupList)
-                        {
-                            TreeNode preTN = new TreeNode(cg.CalcGroupName);
-                            foreach (CalcRule cr in cg.CalcRuleList)
+                            foreach (CalcGroup cg in rs.PreProcessCalcGroupList)
                             {
-                                preTN.Nodes.Add(cr.Name);
+                                TreeNode preTN = new TreeNode(cg.CalcGroupName);
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    preTN.Nodes.Add(cr.Name);
+                                }
+                                treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
                             }
-                            treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
                         }
-                        foreach (CalcGroup cg in rs.PostProcessCalcGroupList)
+                        if (rs.RateVersionCalcGroupList != null)
                         {
-                            TreeNode preTN = new TreeNode(cg.CalcGroupName);
-                            foreach (CalcRule cr in cg.CalcRuleList)
+                            foreach (CalcGroup cg in rs.RateVersionCalcGroupList)
                             {
-                                preTN.Nodes.Add(cr.Name);
+                                TreeNode preTN = new TreeNode(cg.CalcGroupName);
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    preTN.Nodes.Add(cr.Name);
+                                }
+                                treeView1.Nodes[0].Nodes[1].Nodes.Add(preTN);
                             }
-                            treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
                         }
+                        if (rs.PostProcessCalcGroupList != null)
+                        {
+                            foreach (CalcGroup cg in rs.PostProcessCalcGroupList)
+                            {
+                                TreeNode preTN = new TreeNode(cg.CalcGroupName);
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    preTN.Nodes.Add(cr.Name);
+                                }
+                                treeView1.Nodes[0].Nodes[2].Nodes.Add(preTN);
+                            }
+                        }
+
                         richTextBox1.Text = rs.print();//testing
                         //to do stuff cache
 
@@ -739,15 +768,15 @@ namespace C2MDataRelation
             {
                 if (textBox1.Text != "")
                 {
-                    if (comboBox1.Text.Equals("Business Object") || comboBox1.Text.Equals("Business Service") || comboBox1.Text.Equals("Data Area")) 
-                    { 
+                    if (comboBox1.Text.Equals("Business Object") || comboBox1.Text.Equals("Business Service") || comboBox1.Text.Equals("Data Area"))
+                    {
                         try
                         {
                             //QUERY BO SCHEMA
                             richTextBox1.Clear();
                             if (comboBox1.Text.Equals("Business Object"))
                             {
-                                foreach(BusinessObject bo in businessObjects)
+                                foreach (BusinessObject bo in businessObjects)
                                 {
                                     if (bo.getBus_obj_cd() == textBox1.Text)
                                     {
@@ -757,7 +786,8 @@ namespace C2MDataRelation
                                         richTextBox1.AppendText(bo.getIncluding());
                                     }
                                 }
-                            }else if (comboBox1.Text.Equals("Business Service"))
+                            }
+                            else if (comboBox1.Text.Equals("Business Service"))
                             {
                                 foreach (BusinessService bs in businessServices)
                                 {
@@ -789,9 +819,10 @@ namespace C2MDataRelation
                             MessageBox.Show(err.Message);
                         }
                     }
-                    else if (comboBox1.Text.Equals("Usage Calculation Group")) {
+                    else if (comboBox1.Text.Equals("Usage Calculation Group"))
+                    {
                         string text = textBox1.Text;
-                        
+
                         UsageCalcRule usageRule;
                         String result = "";
                         if (usageRulesLoaded.ContainsKey(text))//calc rulle
@@ -800,12 +831,14 @@ namespace C2MDataRelation
                             foreach (KeyValuePair<string, UsageCalcRule> entry in usageRulesLoaded)
                             {
                                 //entry.Value or entry.Key
-                                if (!entry.Key.Equals(usageRule.Name) && entry.Value.sqListEquals(usageRule)) {
+                                if (!entry.Key.Equals(usageRule.Name) && entry.Value.sqListEquals(usageRule))
+                                {
                                     result += entry.Value.Name + "\n";
                                 }
                             }
                         }
-                        else {//calc group
+                        else
+                        {//calc group
                             List<String> usageGrpAffected = findUsageGroupAffected(text);
                             foreach (String entry in usageGrpAffected)
                             {
@@ -840,7 +873,7 @@ namespace C2MDataRelation
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             textBox1.Text = e.Node.Text;
-            if (comboBox1.Text.Equals("Usage Calculation Group")&&usageRulesLoaded!=null)
+            if (comboBox1.Text.Equals("Usage Calculation Group") && usageRulesLoaded != null)
             {
                 richTextBox1.Clear();
                 if (usageRulesLoaded.ContainsKey(e.Node.Text))
@@ -848,12 +881,110 @@ namespace C2MDataRelation
                     XmlDocument xmldoc = changeToXmldoc(usageRulesLoaded[e.Node.Text].Schema);
                     printRTB(xmldoc);
                 }
-                else {
+                else
+                {
                     richTextBox1.Text = "schema not found";
                 }
-                
+
+            }
+            else if (comboBox1.Text.Equals("Rate Schedule") && rateScheduleLoaded != null)
+            {
+                TreeNode clicked = e.Node;
+                if (clicked.Parent != null && clicked.Parent.Text.Equals("Pre-Processing Calculation Groups")) //calc groups
+                {
+                    foreach (CalcGroup cg in rateScheduleLoaded.PreProcessCalcGroupList)
+                    {
+                        if (cg.CalcGroupName.Equals(e.Node.Text))
+                        {
+                            richTextBox1.Text = cg.print();
+                        }
+                    }
+                }
+                else if (clicked.Parent != null && clicked.Parent.Text.Equals("Post-Processing Calculation Groups"))//calc groups
+                {
+                    foreach (CalcGroup cg in rateScheduleLoaded.PostProcessCalcGroupList)
+                    {
+                        if (cg.CalcGroupName.Equals(e.Node.Text))
+                        {
+                            richTextBox1.Text = cg.print();
+                        }
+                    }
+                }
+                else if (clicked.Parent != null && clicked.Parent.Text.Equals("Rate Version Calculation Groups"))//calc groups
+                {
+                    foreach (CalcGroup cg in rateScheduleLoaded.RateVersionCalcGroupList)
+                    {
+                        if (cg.CalcGroupName.Equals(e.Node.Text))
+                        {
+                            richTextBox1.Text = cg.print();
+                        }
+                    }
+                }
+                else if (clicked.Nodes.Count == 0)//calc rule
+                {
+
+                    if (e.Node.Parent.Parent.Text.Equals("Pre-Processing Calculation Groups"))
+                    {
+                        foreach (CalcGroup cg in rateScheduleLoaded.PreProcessCalcGroupList)
+                        {
+                            if (cg.CalcGroupName.Equals(e.Node.Parent))
+                            {
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    if (cr.Name.Equals(e.Node.Text))
+                                    {
+                                        richTextBox1.Text = cr.print();
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    else if (e.Node.Parent.Parent.Text.Equals("Rate Version Calculation Groups"))
+                    {
+                        foreach (CalcGroup cg in rateScheduleLoaded.RateVersionCalcGroupList)
+                        {
+                            if (cg.CalcGroupName.Equals(e.Node.Parent.Text))
+                            {
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    if (cr.Name.Equals(e.Node.Text))
+                                    {
+                                        richTextBox1.Text = cr.print();
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    else if (e.Node.Parent.Parent.Text.Equals("Post-Processing Calculation Groups"))
+                    {
+                        foreach (CalcGroup cg in rateScheduleLoaded.PostProcessCalcGroupList)
+                        {
+                            if (cg.CalcGroupName.Equals(e.Node.Parent))
+                            {
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    if (cr.Name.Equals(e.Node.Text))
+                                    {
+                                        richTextBox1.Text = cr.print();
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
+        }
+        private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+          
+            
         }
     }
 }
