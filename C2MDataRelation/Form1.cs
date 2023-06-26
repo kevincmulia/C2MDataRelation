@@ -865,18 +865,15 @@ namespace C2MDataRelation
                 }
 
             }
-
-        }
-        private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            textBox1.Text = e.Node.Text;
-            if (comboBox1.Text.Equals("Rate Schedule") && rateScheduleLoaded != null)
+            else if (comboBox1.Text.Equals("Rate Schedule") && rateScheduleLoaded != null)
             {
                 TreeNode clicked = e.Node;
-                if (clicked.Parent!=null && clicked.Parent.Text.Equals("Pre-Processing Calculation Groups")) //calc groups
+                if (clicked.Parent != null && clicked.Parent.Text.Equals("Pre-Processing Calculation Groups")) //calc groups
                 {
-                    foreach (CalcGroup cg in rateScheduleLoaded.PreProcessCalcGroupList) {
-                        if (cg.CalcGroupName.Equals(e.Node.Text)) {
+                    foreach (CalcGroup cg in rateScheduleLoaded.PreProcessCalcGroupList)
+                    {
+                        if (cg.CalcGroupName.Equals(e.Node.Text))
+                        {
                             richTextBox1.Text = cg.print();
                         }
                     }
@@ -901,15 +898,19 @@ namespace C2MDataRelation
                         }
                     }
                 }
-                else if (clicked.Nodes.Count==0)//calc rule
+                else if (clicked.Nodes.Count == 0)//calc rule
                 {
-                    
-                    if (e.Node.Parent.Parent.Text.Equals("Pre-Processing Calculation Groups")) {
+
+                    if (e.Node.Parent.Parent.Text.Equals("Pre-Processing Calculation Groups"))
+                    {
                         foreach (CalcGroup cg in rateScheduleLoaded.PreProcessCalcGroupList)
                         {
-                            if (cg.CalcGroupName.Equals(e.Node.Parent)) {
-                                foreach (CalcRule cr in cg.CalcRuleList) {
-                                    if (cr.Name.Equals(e.Node.Text)) {
+                            if (cg.CalcGroupName.Equals(e.Node.Parent))
+                            {
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    if (cr.Name.Equals(e.Node.Text))
+                                    {
                                         richTextBox1.Text = cr.print();
                                         break;
                                     }
@@ -956,6 +957,12 @@ namespace C2MDataRelation
                     }
                 }
             }
+
+        }
+        private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+          
+            
         }
     }
 }
