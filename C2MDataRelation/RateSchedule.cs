@@ -47,7 +47,22 @@ namespace C2MDataRelation
             {
                 string name = descriptor.Name;
                 object value = descriptor.GetValue(this);
-                result += String.Format("{0}={1}", name, value) + "\n\n\n";
+                result += String.Format("{0}={1}", name, value) + "\n";
+            }
+            result += "pre process calculation groups: \n";
+            foreach (CalcGroup cg in this.preProcessCalcGroupList) 
+            {
+                result += "\t" + cg.print() + "\n";
+            }
+            result += "rate version calculation groups: \n";
+            foreach (CalcGroup cg in this.rateVersionCalcGroupList)
+            {
+                result += "\t"+cg.print() + "\n";
+            }
+            result += "post process calculation groups: \n";
+            foreach (CalcGroup cg in this.postProcessCalcGroupList)
+            {
+                result += "\t" + cg.print() + "\n";
             }
             return result;
         }

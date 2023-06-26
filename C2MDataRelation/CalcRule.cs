@@ -1,6 +1,7 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +29,9 @@ namespace C2MDataRelation
             this.seq = orr.GetInt16(orr.GetOrdinal("CR_EXEC_SEQ"));
             this.referredCalcGroup = orr.GetString(orr.GetOrdinal("REF_CALC_GRP_CD"));
             this.CalcRuleType = orr.GetString(orr.GetOrdinal("BUS_OBJ_CD"));
-            this.BoDataArea = "<" + this.name + ">\n" + orr.GetString(orr.GetOrdinal("BO_DATA_AREA")) + "</" + this.name + ">";
+            if (!orr.IsDBNull(orr.GetOrdinal("BO_DATA_AREA"))) {
+                this.BoDataArea = "<" + this.name + ">\n" + orr.GetString(orr.GetOrdinal("BO_DATA_AREA")) + "</" + this.name + ">";
+            }
             this.dst_Id = orr.GetString(orr.GetOrdinal("DST_ID"));
             this.sq = new Sq(orr.GetString(orr.GetOrdinal("UOM_CD")), orr.GetString(orr.GetOrdinal("SQI_CD")), orr.GetString(orr.GetOrdinal("TOU_CD")));
             
@@ -42,5 +45,15 @@ namespace C2MDataRelation
         public string Schema { get => schema; set => schema = value; }
         public string CalcRuleType { get => calcRuleType; set => calcRuleType = value; }
         internal Sq Sq { get => sq; set => sq = value; }
+        public String print() {
+            String result = "";
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(this))
+            {
+                string name = descriptor.Name;
+                object value = descriptor.GetValue(this);
+                result += String.Format("{0}={1}", name, value) + "\n";
+            }
+            return result;
+        }
     }
 }
