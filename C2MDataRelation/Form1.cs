@@ -651,33 +651,43 @@ namespace C2MDataRelation
                         treeView1.Nodes[0].Nodes.Add("Pre-Processing Calculation Groups");
                         treeView1.Nodes[0].Nodes.Add("Rate Version Calculation Groups");
                         treeView1.Nodes[0].Nodes.Add("Post-Processing Calculation Groups");
+
+                        if (rs.PreProcessCalcGroupList!=null) {
+                            foreach (CalcGroup cg in rs.PreProcessCalcGroupList)
+                            {
+                                TreeNode preTN = new TreeNode(cg.CalcGroupName);
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    preTN.Nodes.Add(cr.Name);
+                                }
+                                treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
+                            }
+                        }
+                        if (rs.RateVersionCalcGroupList != null)
+                        {
+                            foreach (CalcGroup cg in rs.RateVersionCalcGroupList)
+                            {
+                                TreeNode preTN = new TreeNode(cg.CalcGroupName);
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    preTN.Nodes.Add(cr.Name);
+                                }
+                                treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
+                            }
+                        }
+                        if (rs.PostProcessCalcGroupList != null)
+                        {
+                            foreach (CalcGroup cg in rs.PostProcessCalcGroupList)
+                            {
+                                TreeNode preTN = new TreeNode(cg.CalcGroupName);
+                                foreach (CalcRule cr in cg.CalcRuleList)
+                                {
+                                    preTN.Nodes.Add(cr.Name);
+                                }
+                                treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
+                            }
+                        }
                         
-                        foreach (CalcGroup cg in rs.PreProcessCalcGroupList) 
-                        {
-                            TreeNode preTN = new TreeNode(cg.CalcGroupName);
-                            foreach (CalcRule cr in cg.CalcRuleList) {
-                                preTN.Nodes.Add(cr.Name);
-                            }
-                            treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
-                        }
-                        foreach (CalcGroup cg in rs.RateVersionCalcGroupList)
-                        {
-                            TreeNode preTN = new TreeNode(cg.CalcGroupName);
-                            foreach (CalcRule cr in cg.CalcRuleList)
-                            {
-                                preTN.Nodes.Add(cr.Name);
-                            }
-                            treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
-                        }
-                        foreach (CalcGroup cg in rs.PostProcessCalcGroupList)
-                        {
-                            TreeNode preTN = new TreeNode(cg.CalcGroupName);
-                            foreach (CalcRule cr in cg.CalcRuleList)
-                            {
-                                preTN.Nodes.Add(cr.Name);
-                            }
-                            treeView1.Nodes[0].Nodes[0].Nodes.Add(preTN);
-                        }
                         richTextBox1.Text = rs.print();//testing
                         //to do stuff cache
 
@@ -707,7 +717,7 @@ namespace C2MDataRelation
 
         private void Form1_Load_1(object sender, EventArgs e)
         {
-
+            
         }
 
         private void button3_Click(object sender, EventArgs e)
