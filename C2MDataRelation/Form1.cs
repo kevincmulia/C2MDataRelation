@@ -1,5 +1,4 @@
-﻿using Oracle.ManagedDataAccess.Client;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -27,6 +26,7 @@ namespace C2MDataRelation
         List<BusinessObject> businessObjects = new List<BusinessObject>();
         List<BusinessService> businessServices = new List<BusinessService>();
         List<DataArea> dataAreas = new List<DataArea>();
+        List<Algorithm> algorithms = new List<Algorithm>();
 
         public void connToDB()
         {
@@ -51,7 +51,7 @@ namespace C2MDataRelation
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            comboBox1.Items.Add("Algorithm");
         }
         private void changeSomething(string tag,string value) { 
             
@@ -527,10 +527,12 @@ namespace C2MDataRelation
 
             if (type == "Business Object")
                 queries = "SELECT * FROM F1_BUS_OBJ WHERE BUS_OBJ_CD='" + name + "'";
-            else if(type == "Business Service")
+            else if (type == "Business Service")
                 queries = "SELECT * FROM F1_BUS_SVC WHERE BUS_SVC_CD='" + name + "'";
-            else if(type == "Data Area")
+            else if (type == "Data Area")
                 queries = "SELECT * FROM F1_DATA_AREA WHERE DATA_AREA_CD='" + name + "'";
+            else if (type == "Algorithm")
+                queries = "SELECT FROM (CI_ALG alg JOIN C1_ALG_TYPE algt on alg.ALG_TYPE_CD=algt.ALG_TYPE_CD) WHERE alg.ALG_CD='" + name + "'";
 
             OracleCommand orc = new OracleCommand(queries, conn);
             using (OracleDataReader orr = orc.ExecuteReader())
@@ -541,14 +543,17 @@ namespace C2MDataRelation
                     {
                         if (type == "Business Object")
                         {
-                            businessObjects.Add(new BusinessObject(orr, conn, findSchemaAffected(name), getInclude(name), getSchema(name), getFullSchema(name)));
+                            businessObjects.Add(new BusinessObject(orr, findSchemaAffected(name), getInclude(name), getSchema(name), getFullSchema(name)));
                         }
                         else if (type == "Business Service")
                         {
-                            businessServices.Add(new BusinessService(orr, conn, findSchemaAffected(name), getInclude(name), getSchema(name), getFullSchema(name)));
+                            businessServices.Add(new BusinessService(orr, findSchemaAffected(name), getInclude(name), getSchema(name), getFullSchema(name)));
                         }else if (type == "Data Area")
                         {
-                            dataAreas.Add(new DataArea(orr, conn, findSchemaAffected(name), getInclude(name), getSchema(name), getFullSchema(name)));
+                            dataAreas.Add(new DataArea(orr, findSchemaAffected(name), getInclude(name), getSchema(name), getFullSchema(name)));
+                        }else if (type == "Algorithm")
+                        {
+                            algorithms.Add(new Algorithm(orr));
                         }
                     }
                 }
@@ -682,6 +687,24 @@ namespace C2MDataRelation
                         //to do stuff cache
 
 
+                    }else if (comboBox1.Text.Equals("Algorithm"))
+                    {
+                        bool newALG = true;
+                        foreach (Algorithm alg in algorithms)
+                        {
+                            if (alg.getAlg_cd() == textBox1.Text)
+                            {
+                                richTextBox1.Clear();
+                                richTextBox1.Text = alg.ToString();
+                                newALG = false;
+                            }
+                        }
+                        if (newALG)
+                        {
+                            getInfo(textBox1.Text, "Algorithm");
+                            richTextBox1.Clear();
+                            richTextBox1.Text = algorithms[algorithms.Count - 1].ToString();
+                        }
                     }
                 }
                 else

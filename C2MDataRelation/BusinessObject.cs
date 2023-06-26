@@ -31,7 +31,7 @@ namespace C2MDataRelation
             this.finalSchema = null;
         }
 
-        public BusinessObject(OracleDataReader odr, OracleConnection con, string included, string including, string root, string final)
+        public BusinessObject(OracleDataReader odr, string included, string including, string root, string final)
         {
             this.bus_obj_cd = odr.GetString(odr.GetOrdinal("BUS_OBJ_CD")).Trim();
             this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));

@@ -25,7 +25,7 @@ namespace C2MDataRelation
             this.app_svc_id = null;
         }
 
-        public BusinessService(OracleDataReader odr, OracleConnection con, string included, string including, string root, string final)
+        public BusinessService(OracleDataReader odr, string included, string including, string root, string final)
         {
             this.bus_svc_cd = odr.GetString(odr.GetOrdinal("BUS_SVC_CD")).Trim();
             this.svc_name = odr.GetString(odr.GetOrdinal("SVC_NAME")).Trim();

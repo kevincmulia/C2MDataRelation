@@ -23,7 +23,7 @@ namespace C2MDataRelation
             this.f1_ext_data_area_cd=null;
         }
 
-        public DataArea(OracleDataReader odr, OracleConnection con, string included, string including, string root, string final)
+        public DataArea(OracleDataReader odr, string included, string including, string root, string final)
         {
             this.data_area_cd = odr.GetString(odr.GetOrdinal("DATA_AREA_CD")).Trim();
             this.version = odr.GetInt16(odr.GetOrdinal("VERSION"));
